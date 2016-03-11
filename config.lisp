@@ -7,6 +7,9 @@
 
 ;; For windows, we need to find out, which architecture CL is built
 (defvar cl-bits (* 8 (foreign-type-size :pointer)))
+(defvar cmake_flags (if (= cl-bits 32)
+                        "-DCMAKE_CXX_FLAGS=-m32 -DCMAKE_C_FLAGS=-m32"
+                        ""))
 
 ;; Define the filename of the foreign library depending on the OS
 (defvar vigracl-dylib-file
@@ -49,8 +52,7 @@
 (defun build-vigra_c ()
   #+unix (if (vigra-installed?)
          	 ;;VIGRA is found! Try to compile vigra_c bindings
-          	 (if (stringp (system-env (concatenate 'string  "cd " (namestring vigra_c-path)  " && "
-	         									   " make " make-setting (write-to-string cl-bits)))); "make macosx32",  "make macosx64", "make unix32"  or "make unix64"
+          	 (if (stringp (system-env (concatenate 'string  "cd " (namestring vigra_c-path) " && mkdir -p build && cd build && cmake " cmake_flags " .. && make && cd .. && rm -rf ./build")))
                  (stringp (system-env (concatenate 'string  "cp " (namestring (merge-pathnames vigra_c-bin-path vigracl-dylib-file)) " "
                 								  		  (namestring vigracl-dylib-path))))
                  (error "making the vigra_c lib failed, although vigra seems to be installed"))

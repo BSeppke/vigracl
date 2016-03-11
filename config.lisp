@@ -17,11 +17,6 @@
 	#+unix	  "libvigra_c.so"
 	#+windows "vigra_c.dll")
 	
-(defvar make-setting
-	#+darwin  "macosx"
-	#+unix 	  "unix" 
-	#+windows "win")
-	
 (defvar vigracl-dylib-path (merge-pathnames vigracl-path vigracl-dylib-file))
 
 

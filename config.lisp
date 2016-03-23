@@ -56,8 +56,6 @@
   #+windows (progn
                (easy-system-call (concatenate 'string "copy " (namestring vigra_c-bin-path) "\\" make-setting (write-to-string cl-bits) "\\*.dll "
                												  (namestring vigracl-path)))
-               (easy-system-call (concatenate 'string "copy " (namestring vigracl-path) "\\zlib.dll "
-               												  (namestring vigracl-path)  "\\zlibwapi.dll"))
                T)
 )
 

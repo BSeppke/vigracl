@@ -133,3 +133,107 @@
 
 (defun fouriertransform (image)
   	(pivot-list (mapcar #'fouriertransform-band image)))
+
+;###############################################################################
+;###################        Fast cross correlation          ####################
+(defcfun ("vigra_fastcrosscorrelation_c" vigra_fastcrosscorrelation_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(width :int)
+	(height :int)
+	(mask_width :int)
+	(mask_height :int))
+
+(defun fastcrosscorrelation-band (band mask)
+  	(let* ((width  (band-width band))
+		   (height (band-height band))
+	 	   (mask_width  (band-width mask))
+		   (mask_height (band-height mask))
+	 	   (band2  (make-band width height 0.0))
+		   (result (with-arrays-as-foreign-pointers
+						((band 	ptr_band  :float :lisp-type single-float) 
+						 (mask	ptr_mask  :float :lisp-type single-float) 
+						 (band2	ptr_band2 :float :lisp-type single-float))
+						(vigra_fastcrosscorrelation_c ptr_band ptr_mask ptr_band2 width height mask_width mask_height))))
+   		(case result
+     		((0) band2)
+      		((1) (error "Error in vigracl.imgproc:fastcrosscorrelation: Fast cross-correlation of image failed!!")))))
+	  
+(defun fastcrosscorrelation (image mask)
+  	(mapcar #'fastcrosscorrelation-band image mask))
+  	
+;###############################################################################
+;###################   Fast normalized cross correlation    ####################
+(defcfun ("vigra_fastnormalizedcrosscorrelation_c" vigra_fastnormalizedcrosscorrelation_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(width :int)
+	(height :int)
+	(mask_width :int)
+	(mask_height :int))
+
+(defun fastnormalizedcrosscorrelation-band (band mask)
+  	(let* ((width  (band-width band))
+		   (height (band-height band))
+	 	   (mask_width  (band-width mask))
+		   (mask_height (band-height mask))
+	 	   (band2  (make-band width height 0.0))
+		   (result (with-arrays-as-foreign-pointers
+						((band 	ptr_band  :float :lisp-type single-float) 
+						 (mask	ptr_mask  :float :lisp-type single-float) 
+						 (band2	ptr_band2 :float :lisp-type single-float))
+						(vigra_fastnormalizedcrosscorrelation_c ptr_band ptr_mask ptr_band2 width height mask_width mask_height))))
+   		(case result
+     		((0) band2)
+      		((1) (error "Error in vigracl.imgproc:fastnormalizedcrosscorrelation: Fast normalized cross-correlation of image failed!!")))))
+	  
+(defun fastnormalizedcrosscorrelation (image mask)
+  	(mapcar #'fastnormalizedcrosscorrelation-band image mask))
+  
+;###############################################################################
+;################### Extraction of local maxima of an image ####################
+(defcfun ("vigra_localmaxima_c" vigra_localmaxima_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int))
+
+(defun localmaxima-band (band)
+  	(let* ((width  (band-width band))
+		   (height (band-height band))
+	 	   (band2  (make-band width height 0.0))
+		   (result (with-arrays-as-foreign-pointers
+						((band 	ptr_band  :float :lisp-type single-float) 
+						 (band2	ptr_band2 :float :lisp-type single-float))
+						(vigra_localmaxima_c ptr_band ptr_band2 width height))))
+   		(case result
+     		((0) band2)
+      		((1) (error "Error in vigracl.imgproc:localmaxima: Extraction of local maxima of image failed!!")))))
+	  
+(defun localmaxima (image)
+  	(mapcar #'localmaxima-band image))
+  
+;###############################################################################
+;################### Extraction of local minima of an image ####################
+(defcfun ("vigra_localminima_c" vigra_localminima_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int))
+
+(defun localminima-band (band)
+  	(let* ((width  (band-width band))
+		   (height (band-height band))
+	 	   (band2  (make-band width height 0.0))
+		   (result (with-arrays-as-foreign-pointers
+						((band 	ptr_band  :float :lisp-type single-float) 
+						 (band2	ptr_band2 :float :lisp-type single-float))
+						(vigra_localminima_c ptr_band ptr_band2 width height))))
+   		(case result
+     		((0) band2)
+      		((1) (error "Error in vigracl.imgproc:localminima: Extraction of local minima of image failed!!")))))
+	  
+(defun localminima (image)
+  	(mapcar #'localminima-band image))

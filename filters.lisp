@@ -530,3 +530,33 @@
 
 (defun distancetransform (image background_label norm)
   	(mapcar #'(lambda (arr) (distancetransform-band arr background_label norm)) image))
+
+
+;###############################################################################
+;###################             Shock Filtering            ####################
+
+(defcfun ("vigra_shockfilter_c" vigra_shockfilter_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int)
+    (sigma :float)
+    (rho :float)
+    (upwind_factor_h :float)
+	(iterations :int))
+
+(defun shockfilter-band (band sigma rho upwind_factor_h iterations)
+  	(let* ((width  (band-width band))
+		   (height (band-height band))
+	 	   (band2 (make-band width height 0.0))
+	 	   (result (with-arrays-as-foreign-pointers
+						((band  ptr_band  :float :lisp-type single-float) 
+						 (band2 ptr_band2 :float :lisp-type single-float))
+						(vigra_shockfilter_c ptr_band ptr_band2 width height sigma rho upwind_factor_h iterations))))
+    	(case result
+      		((0) band2)
+		    ((1) (error "Error in vigracl.filters.shockfilter: Shock filtering failed!"))
+		    ((2) (error "Error in vigracl.filters.shockfilter: Iterations need to be > 0!")))))
+
+(defun shockfilter (image sigma rho upwind_factor_h iterations)
+  (mapcar #'(lambda (arr) (shockfilter-band arr sigma rho upwind_factor_h iterations)) image))

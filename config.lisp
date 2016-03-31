@@ -4,6 +4,12 @@
 (defvar vigracl-path  (asdf:system-source-directory 'vigracl))
 (defvar vigracl-version "1.0.0")
 
+;;According to the cl-cookbook
+(defun split-string-at-dot (string)
+    (loop for i = 0 then (1+ j)
+          as j = (position #\. string :start i)
+          collect (subseq string i j)
+          while j))
 
 ;; For windows, we need to find out, which architecture CL is built
 (defvar cl-bits (* 8 (foreign-type-size :pointer)))
@@ -39,9 +45,20 @@
 (defvar login_cmd (concatenate 'string "source " (namestring login_script)))
 (defun system-env (arg) (easy-system-call (concatenate 'string login_cmd " && " arg)))
 
+(defun vigra-version ()
+  (let* ((version_string (system-env "vigra-config --version")))
+    (if (> (length version_string) 0)
+        (progn (stringp version_string)
+               (mapcar #'parse-integer (split-string-at-dot version_string)))
+        '())))
+
 (defun vigra-installed? () 
-  (print "Searching for vigra using 'vigra-config --version': \n")
-  (stringp (system-env "vigra-config --version")))
+  (print "Searching for vigra >= 1.11.0 using 'vigra-config --version':")
+  (let ((version (vigra-version)))
+    (if (null version)
+        F
+        (or (and (= (first version) 1) (>= (second version) 11))
+                (> (first version) 1)))))
   
 ; The compilation routine (at least for macosx and unix)
 (defun build-vigra_c ()

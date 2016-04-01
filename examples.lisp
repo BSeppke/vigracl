@@ -56,6 +56,16 @@
 (time (defvar img_mg (mapcar #'mysmooth-band img)))
 
 
+(print "testing subimage and correlation facilities")
+(defvar img_cut (subimage img 100 50 151 101)) ;;Mask needs to have odd size!
+
+(defvar fcc_res (fastcrosscorrelation img img_cut))
+(defvar fncc_res (fastnormalizedcrosscorrelation img img_cut))
+(defvar pos_matches (localmaxima fncc_res))
+(defvar neg_matches (localminima fncc_res))
+
+
+
 ; Tensor tests
 (defvar img1_st  (structuretensor img 1.0 4.0))
 

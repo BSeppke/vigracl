@@ -21,7 +21,7 @@
 						(vigra_resizeimage_c ptr_band ptr_band2 width height width2 height2 resize_mode))))
    		(case result
       		((0) band2)
-      		((1) (error "Error in vigracl.imgproc:resizeimage: Rotation of image failed!!"))
+      		((1) (error "Error in vigracl.imgproc:resizeimage: Resize of image failed!!"))
       		((2) (error "Error in vigracl.imgproc:resizeimage: Resize mode must be in {0,1,2,3,4}!!")))))
 
 (defun resizeimage (image width2 height2 resize_mode)
@@ -158,7 +158,8 @@
 						(vigra_fastcrosscorrelation_c ptr_band ptr_mask ptr_band2 width height mask_width mask_height))))
    		(case result
      		((0) band2)
-      		((1) (error "Error in vigracl.imgproc:fastcrosscorrelation: Fast cross-correlation of image failed!!")))))
+      		((1) (error "Error in vigracl.imgproc:fastcrosscorrelation: Fast cross-correlation of image failed!!"))
+      		((2) (error "Error in vigracl.imgproc:fastcrosscorrelation: Mask size needs to be odd!!")))))
 	  
 (defun fastcrosscorrelation (image mask)
   	(mapcar #'fastcrosscorrelation-band image mask))
@@ -187,7 +188,8 @@
 						(vigra_fastnormalizedcrosscorrelation_c ptr_band ptr_mask ptr_band2 width height mask_width mask_height))))
    		(case result
      		((0) band2)
-      		((1) (error "Error in vigracl.imgproc:fastnormalizedcrosscorrelation: Fast normalized cross-correlation of image failed!!")))))
+      		((1) (error "Error in vigracl.imgproc:fastnormalizedcrosscorrelation: Fast normalized cross-correlation of image failed!!"))
+      		((2) (error "Error in vigracl.imgproc:fastnormalizedcrosscorrelation: Mask size needs to be odd!!")))))
 	  
 (defun fastnormalizedcrosscorrelation (image mask)
   	(mapcar #'fastnormalizedcrosscorrelation-band image mask))
@@ -237,3 +239,36 @@
 	  
 (defun localminima (image)
   	(mapcar #'localminima-band image))
+
+
+;###############################################################################
+;###################             subimage                   ####################
+(defcfun ("vigra_subimage_c" vigra_subimage_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int)
+	(left :int)
+	(upper :int)
+	(right :int)
+	(lower :int))
+
+(defun subimage-band (band left upper right lower)
+  	(let* ((width  (band-width band))
+	 	   (height (band-height band))
+           (cut_width (- right left))
+           (cut_height (- lower upper))
+	 	   (band2  (make-band cut_width cut_height 0.0))
+	 	   (result (with-arrays-as-foreign-pointers
+						((band  ptr_band  :float :lisp-type single-float) 
+						 (band2 ptr_band2 :float :lisp-type single-float) )
+						(vigra_subimage_c ptr_band ptr_band2 width height left upper right lower))))
+   		(case result
+      		((0) band2)
+      		((1) (error "Error in vigracl.imgproc:subimage: Subimage creation failed!!"))
+      		((2) (error "Error in vigracl.imgproc:subimage: Constraints not fulfilled: left < right, upper < lower, right - left <= width, lower - upper <= height!!")))))
+
+(defun subimage (image left upper right lower)
+  (mapcar #'(lambda (arr) (subimage-band arr left upper right lower)) image))
+
+  	

@@ -14,8 +14,8 @@
 ;; For windows, we need to find out, which architecture CL is built
 (defvar cl-bits (* 8 (foreign-type-size :pointer)))
 (defvar cmake_flags (if (= cl-bits 32)
-                        "-DCMAKE_CXX_FLAGS=-m32 -DCMAKE_C_FLAGS=-m32"
-                        ""))
+                        "-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_C_FLAGS=-m32"
+                        "-DCMAKE_BUILD_TYPE=Release"))
 
 ;; Define the filename of the foreign library depending on the OS
 (defvar vigracl-dylib-file

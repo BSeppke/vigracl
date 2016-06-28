@@ -47,6 +47,8 @@
 (print "loading lenna-image")
 (defvar img (load-example-image "lenna_face.png"))
 
+(defvar img_padd (paddimage img 10 20 30 40))
+
 (print "performance test gaussian smoothing")
 (print "vigra-implicit-method:")
 (time (defvar img_ig  (gsmooth img 0.5)))

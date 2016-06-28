@@ -272,3 +272,33 @@
   (mapcar #'(lambda (arr) (subimage-band arr left upper right lower)) image))
 
   	
+
+;###############################################################################
+;###################             paddimage                   ####################
+(defcfun ("vigra_paddimage_c" vigra_paddimage_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int)
+	(left :int)
+	(upper :int)
+	(right :int)
+	(lower :int))
+
+(defun paddimage-band (band left upper right lower)
+  	(let* ((width  (band-width band))
+	 	   (height (band-height band))
+           (padd_width (+ right width left))
+           (padd_height (+ lower height upper))
+	 	   (band2  (make-band padd_width padd_height 0.0))
+	 	   (result (with-arrays-as-foreign-pointers
+						((band  ptr_band  :float :lisp-type single-float) 
+						 (band2 ptr_band2 :float :lisp-type single-float) )
+						(vigra_paddimage_c ptr_band ptr_band2 width height left upper right lower))))
+   		(case result
+      		((0) band2)
+      		((1) (error "Error in vigracl.imgproc:paddimage: Padded image creation failed!!"))
+      		((2) (error "Error in vigracl.imgproc:paddimage: Constraints not fulfilled: left & right >= 0, upper & lower >= 0!!")))))
+
+(defun paddimage (image left upper right lower)
+  (mapcar #'(lambda (arr) (paddimage-band arr left upper right lower)) image))

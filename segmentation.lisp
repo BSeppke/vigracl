@@ -49,6 +49,60 @@
 
 
 ;###############################################################################
+;###################      SLIC Segmentation Algorithm       ####################
+(defcfun ("vigra_slic_gray_c" vigra_slic_gray_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int)
+	(seedDistance :int)
+	(intensityScaling :double)
+	(iterations :int))
+
+(defun slic-band (band  &optional (seedDistance 15) (intensityScaling 20.0) (iterations 40))
+  	(let* ((width  (band-width band))
+	 	   (height (band-height band))
+	 	   (band2  (make-band width height 0.0))
+	 	   (result (with-arrays-as-foreign-pointers
+						((band  ptr_band  :float :lisp-type single-float) 
+						 (band2 ptr_band2 :float :lisp-type single-float))
+						(vigra_slic_gray_c ptr_band ptr_band2 width height seedDistance (coerce intensityScaling 'double-float) iterations))))
+    	(if (= result -1)
+			(error "Error in vigracl.segmentation.slic-band: SLIC segmentation of image failed!")
+     		band2)))
+
+(defcfun ("vigra_slic_rgb_c" vigra_slic_rgb_c) :int
+	(band_r :pointer)
+	(band_g :pointer)
+	(band_b :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int)
+	(seedDistance :int)
+	(intensityScaling :double)
+	(iterations :int))
+
+(defun slic-rgb (band_r band_g band_b  &optional (seedDistance 15) (intensityScaling 20.0) (iterations 40))
+  	(let* ((width  (band-width band_r))
+	 	   (height (band-height band_r))
+	 	   (band2  (make-band width height 0.0))
+	 	   (result (with-arrays-as-foreign-pointers
+						((band_r  ptr_band_r  :float :lisp-type single-float) 
+						 (band_g  ptr_band_g  :float :lisp-type single-float) 
+						 (band_b  ptr_band_b  :float :lisp-type single-float) 
+						 (band2 ptr_band2 :float :lisp-type single-float))
+						(vigra_slic_rgb_c ptr_band_r ptr_band_g ptr_band_b ptr_band2 width height seedDistance (coerce intensityScaling 'double-float) iterations))))
+    	(if (= result -1)
+			(error "Error in vigracl.segmentation.slic-rgb: SLIC segmentation of image failed!")
+     		band2)))
+	  
+(defun slic (image &optional (seedDistance 15) (intensityScaling 20.0) (iterations 40))
+  (if (= (length image) 3)
+      (list (slic-rgb (image->red-band image) (image->green-band image) (image->blue-band image) seedDistance intensityScaling iterations))
+      (mapcar #'(lambda (arr) (slic-band arr seedDistance intensityScaling iterations)) image)))
+
+
+;###############################################################################
 ;###################      Canny Edge-Detection              ####################
 (defcfun ("vigra_cannyedgeimage_c" vigra_cannyedgeimage_c) :int
 	(band :pointer)

@@ -122,6 +122,12 @@
 	     (ggradient 
 	      (resizeimage img 800 800 4)
 	      3.0))) 0.0))
+	      
+(print "performing SLIC segmentation on lenna image")
+(defvar img2_slic  (regionimagetocrackedgeimage  (slic img) 0.0))
+	      
+(print "performing SLIC segmentation on red channel of lenna image")
+(defvar img2red_slic  (regionimagetocrackedgeimage  (slic (image->red img)) 0.0))
 
 (print "testing rotation and reflection functions on image")
 (defvar img4 (reflectimage img 3))
@@ -155,7 +161,6 @@
 (defvar img11 (sharpening img 3.0))
 (defvar img12 (nonlineardiffusion img 0.1 2.0))
 
-
 (print "testing splineimageview facilities")
 (defvar pos_x  34.23)
 (defvar pos_y 123.23)
@@ -180,6 +185,8 @@
 
 (print "saving resulting images")
 (saveimage img2  "lenna-relabeled-watersheds-on-resized-gradient-image.png")
+(saveimage img2_slic  "lenna-slic.png")
+(saveimage img2red_slic  "lenna-red-channel-slic.png")
 
 (saveimage img4  "lenna-reflected-both.png")
 (saveimage img5  "lenna-rotated-15deg.png")

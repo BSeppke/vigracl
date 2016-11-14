@@ -4,8 +4,8 @@
 ;###################          Generic Convolution           ####################
 (defcfun ("vigra_convolveimage_c" vigra_convolveimage_c) :int
 	(band :pointer)
-	(band2 :pointer)
 	(kernel :pointer)
+	(band2 :pointer)
 	(width :int)
 	(height :int)
 	(kernel_width :int)
@@ -18,10 +18,10 @@
 	 	   (kernel_height (band-height kernelMat))
 	 	   (band2  (make-band width height 0.0))
 	 	   (result (with-arrays-as-foreign-pointers
-						((band  	ptr_band  	  :float  :lisp-type single-float) 
-						 (band2 	ptr_band2 	  :float  :lisp-type single-float) 
-						 (kernelMat	ptr_kernelMat :double :lisp-type double-float))
-						(vigra_convolveimage_c ptr_band ptr_band2 ptr_kernelMat width height  kernel_width kernel_height))))
+						((band  	ptr_band  	  :float  :lisp-type single-float)  
+						 (kernelMat	ptr_kernelMat :double :lisp-type double-float)
+						 (band2 	ptr_band2 	  :float  :lisp-type single-float))
+						(vigra_convolveimage_c ptr_band ptr_kernelMat ptr_band2 width height  kernel_width kernel_height))))
     	(case result
      		((0) band2)
      		((1) (error "Error in vigracl.filters.colvolveimage: Convolution with kernel failed!"))
@@ -35,9 +35,9 @@
 ;###################        Separable Convolution           ####################
 (defcfun ("vigra_separableconvolveimage_c" vigra_separableconvolveimage_c) :int
 	(band :pointer)
-	(band2 :pointer)
 	(kernel_h :pointer)
 	(kernel_v :pointer)
+	(band2 :pointer)
 	(width :int)
 	(height :int)
 	(kernel_width :int)
@@ -51,16 +51,16 @@
 	 	   (band2  (make-band width height 0.0))
 	 	   (result (with-arrays-as-foreign-pointers
 						((band  	ptr_band  	 :float  :lisp-type single-float) 
-						 (band2 	ptr_band2 	 :float  :lisp-type single-float) 
 						 (kernel_h	ptr_kernel_h :double :lisp-type double-float) 
-						 (kernel_v	ptr_kernel_v :double :lisp-type double-float))
-						(vigra_separableconvolveimage_c ptr_band ptr_band2 ptr_kernel_h  ptr_kernel_v width height  kernel_width kernel_height))))
+						 (kernel_v	ptr_kernel_v :double :lisp-type double-float)
+						 (band2 	ptr_band2 	 :float  :lisp-type single-float))
+						(vigra_separableconvolveimage_c ptr_band ptr_kernel_h  ptr_kernel_v ptr_band2 width height  kernel_width kernel_height))))
     	(case result
      		((0) band2)
      		((1) (error "Error in vigracl.filters.separablecolvolveimage: Convolution with kernel failed!"))
       		((2) (error "Error in vigracl.filters.separablecolvolveimage: Kernel dimensions must be odd!")))))
 
-(defun separableconvolveimage (image  kernel_h kernel_v)
+(defun separableconvolveimage (image kernel_h kernel_v)
   	(mapcar #'(lambda (arr) (separableconvolveimage-band arr kernel_h kernel_v)) image))
 
 

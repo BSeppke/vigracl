@@ -64,6 +64,14 @@
 	   :laplacianofgaussian
 	   :hessianmatrixofgaussian-band
 	   :hessianmatrixofgaussian
+	   :gsharpening-band
+	   :gsharpening
+	   :sharpening-band
+	   :sharpening
+	   :nonlineardiffusion-band 
+	   :nonlineardiffusion 
+	   
+	   ;vigracl.tensors
 	   :structuretensor-band
 	   :structuretensor
 	   :boundarytensor-band
@@ -78,14 +86,6 @@
 	   :tensortoedgecorner
 	   :hourglassfilter-band
 	   :hourglassfilter
-	   :gsharpening-band
-	   :gsharpening
-	   :sharpening-band
-	   :sharpening
-	   :nonlineardiffusion-band 
-	   :nonlineardiffusion 
-	   :distancetransform-band 
-	   :distancetransform
 	   
 	   ;vigracl.imgproc
 	   :resizeimage-band
@@ -112,6 +112,8 @@
 	   :regionimagetocrackedgeimage
 	   
 	   ;vigracl.morphology
+	   :distancetransform-band 
+	   :distancetransform
 	   :erodeimage-band
 	   :erodeimage
 	   :dilateimage-band

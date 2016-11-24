@@ -1,4 +1,30 @@
 (in-package #:vigracl)
+    
+;###############################################################################
+;###################          Distance Transform            ####################
+(defcfun ("vigra_distancetransform_c" vigra_distancetransform_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int) 
+	(height :int)
+    (background_label :float)
+    (norm  :int))
+
+(defun distancetransform-band (band background_label norm)
+  	(let* ((width  (band-width band))
+		   (height (band-height band))
+	 	   (band2 (make-band width height 0.0))
+	 	   (result (with-arrays-as-foreign-pointers
+						((band  ptr_band  :float :lisp-type single-float) 
+						 (band2 ptr_band2 :float :lisp-type single-float))
+						(vigra_distancetransform_c ptr_band ptr_band2 width height background_label norm))))
+    	(case result
+      		((0) band2)
+      		((1) (error "Error in vigracl.filters.distancetransform: Distance transformation failed!!"))
+      		((2) (error "Error in vigracl.filters.distancetransform: Norm must be in {0,1,2} !!")))))
+
+(defun distancetransform (image background_label norm)
+  	(mapcar #'(lambda (arr) (distancetransform-band arr background_label norm)) image))
 
 ;###############################################################################
 ;###################         Erosion                        ####################
@@ -69,7 +95,7 @@
 
 ;###############################################################################
 ;###################         Upwind image                   ####################
-(defcfun ("vigraext_upwind_c" vigraext_upwind_c) :int
+(defcfun ("vigra_upwindimage_c" vigra_upwindimage_c) :int
 	(band :pointer)
 	(signum_band :pointer)
 	(band2 :pointer)
@@ -85,7 +111,7 @@
 						((band  	  ptr_band  	  :float :lisp-type single-float) 
 						 (signum_band ptr_signum_band :float :lisp-type single-float) 
 						 (band2 	  ptr_band2       :float :lisp-type single-float))
-						(vigraext_upwind_c ptr_band ptr_signum_band ptr_band2 width height weight))))
+						(vigra_upwindimage_c ptr_band ptr_signum_band ptr_band2 width height weight))))
     	(case result
       		((0) band2)
       		((1) (error "Error in vigracl.morphology:upwindimage: Upwinding of image failed!!")))))

@@ -3,9 +3,9 @@
 ;###############################################################################
 ;############ Getting Dimensions and # of Bands of an image-file    ############
 
-(defcfun ("get_width_c" get_width_c)   		:int 	(filename :string))
-(defcfun ("get_height_c" get_height_c) 		:int 	(filename :string))
-(defcfun ("get_numbands_c" get_numbands_c)	:int 	(filename :string))
+(defcfun ("vigra_imagewidth_c" vigra_imagewidth_c)   		:int 	(filename :string))
+(defcfun ("vigra_imageheight_c" vigra_imageheight_c) 		:int 	(filename :string))
+(defcfun ("vigra_imagenumbands_c" vigra_imagenumbands_c)	:int 	(filename :string))
 
 
 ;###############################################################################
@@ -20,8 +20,8 @@
 	(filename :string))
 
 (defun loadgrayimage (filename)
-	(let* ((width  	(get_width_c filename))
-		   (height 	(get_height_c filename))
+	(let* ((width  	(vigra_imagewidth_c filename))
+		   (height 	(vigra_imageheight_c filename))
 	 	   (band    (make-band width height 0.0))
 	 	   (result 	(with-array-as-foreign-pointer
 	 					(band ptr_band :float :lisp-type single-float) 
@@ -42,8 +42,8 @@
 	(filename :string))
 	      
 (defun loadrgbimage (filename)
-  	(let* ((width  (get_width_c filename))
-	 	   (height (get_height_c filename))
+  	(let* ((width  (vigra_imagewidth_c filename))
+	 	   (height (vigra_imageheight_c filename))
 	 	   (band_r (make-band width height 0.0))
 	 	   (band_g (make-band width height 0.0))
 	 	   (band_b (make-band width height 0.0))
@@ -61,7 +61,7 @@
 ;######    Generic (choose automatically if image is gray or colored)    #######
 
 (defun loadimage (filename)
-  	(case (get_numbands_c filename)
+  	(case (vigra_imagenumbands_c filename)
     	((1) (loadgrayimage filename))
     	((3) (loadrgbimage filename))
     	(else "Error in vigracl.impex.loadimage: Image has neither 1 nor 3 bands and thus cannot be loaded!")))

@@ -41,4 +41,5 @@
 	(:file "morphology")
 	(:file "segmentation")
 	(:file "filters")
+	(:file "tensors")
 	(:file "splineimageview")))

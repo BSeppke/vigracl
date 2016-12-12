@@ -248,6 +248,32 @@
     
 
 ;###############################################################################
+;###################          Median Filtering              ####################
+(defcfun ("vigra_medianfilter_c" vigra_medianfilter_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int) 
+	(height :int)
+	(window_width :int) 
+	(window_height :int))
+
+(defun medianfilter-band (band window_width window_height)
+  	(let* ((width  (band-width band))
+		   (height (band-height band))
+	 	   (band2 (make-band width height 0.0))
+	 	   (result (with-arrays-as-foreign-pointers
+						((band  ptr_band  :float :lisp-type single-float) 
+						 (band2 ptr_band2 :float :lisp-type single-float))
+						(vigra_medianfilter_c ptr_band ptr_band2 width height window_width window_height))))
+    	(case result
+      		((0) band2)
+      		((1) (error "Error in vigracl.filters.medianfilter: Median filtering failed!!")))))
+
+(defun medianfilter (image window_width window_height)
+  	(mapcar #'(lambda (arr) (medianfilter-band arr window_width window_height)) image))
+       
+
+;###############################################################################
 ;###################          Nonlinear Diffusion           ####################
 (defcfun ("vigra_nonlineardiffusion_c" vigra_nonlineardiffusion_c) :int
 	(band :pointer)

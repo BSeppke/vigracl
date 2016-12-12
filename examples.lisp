@@ -159,7 +159,8 @@
 (defvar img9 (laplacianofgaussian img 3.0))
 (defvar img10 (gsharpening img 0.5 3.0))
 (defvar img11 (sharpening img 3.0))
-(defvar img12 (nonlineardiffusion img 0.1 2.0))
+(defvar img12 (medianfilter img 3 3))
+(defvar img13 (nonlineardiffusion img 0.1 2.0))
 
 (print "testing splineimageview facilities")
 (defvar pos_x  34.23)
@@ -197,4 +198,5 @@
 (saveimage img9  "lenna-log-3.0.png")
 (saveimage img10 "lenna-gsharpening-0.5-3.0.png")
 (saveimage img11 "lenna-sharpening-3.0.png")
-(saveimage img12 "lenna-nonlineardiffusion-0.1-2.0.png")
+(saveimage img12 "lenna-medianfilter-3x3.png")
+(saveimage img13 "lenna-nonlineardiffusion-0.1-2.0.png")

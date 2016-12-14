@@ -27,13 +27,13 @@
 
 
 ;; Stuff needed to compile the c-bindings if necessary...
-(defvar base_login_script (truename "~/.profile"))
+(defvar base_login_script "~/.profile")
 
 (defvar vigra_c-path 	 (merge-pathnames "vigra_c/" vigracl-path))
 (defvar vigra_c-bin-path (merge-pathnames "bin/" vigra_c-path))
 
 (defvar login_script (if (probe-file base_login_script)
-                        	  base_login_script
+                        	  (truename base_login_script)
                          	  (merge-pathnames vigra_c-path "fallback.profile")))
 
 (defun easy-system-call (command)
@@ -71,7 +71,7 @@
          	(error "Vigra is not found. Please check if the prefix path is set correctly in HOME/.profile environment file!"))
          	
   #+windows (progn
-               (easy-system-call (concatenate 'string "copy " (namestring vigra_c-bin-path) "\\" make-setting (write-to-string cl-bits) "\\*.dll "
+               (easy-system-call (concatenate 'string "copy " (namestring vigra_c-bin-path) "\\win" (write-to-string cl-bits) "\\*.dll "
                												  (namestring vigracl-path)))
                T)
 )

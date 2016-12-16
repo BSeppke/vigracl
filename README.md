@@ -1,7 +1,7 @@
 vigracl
 =======
 
-Use the power of the computer vision library VIGRA by means of "good old" common lisp. The interaction between both (c++ and functional) worlds is realized by using the CFFI extension and the vigra_c wrapper library. Tested with AllegroCL and SBCL!
+Use the power of the computer vision library VIGRA by means of "good old" common lisp. The interaction between both (c++ and functional) worlds is realized by using the CFFI extension and the vigra_c wrapper library. Tested with SBCL! Might work with AllegroCL as well, if you replace the waaf-cffi bindings by the native foreign array passing of ACL.
 
 1. Prerequisites (VIGRA)
 -----------------------------------

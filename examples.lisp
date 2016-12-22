@@ -117,8 +117,13 @@
 
 ;Testing vigra methods
 (print "performing watershed transform on resized gradient image")
-(defvar img2  (regionimagetocrackedgeimage(labelimage
-	    (watersheds
+(defvar img2a  (regionimagetocrackedgeimage(labelimage
+	    (watersheds-uf
+	     (ggradient 
+	      (resizeimage img 800 800 4)
+	      3.0))) 0.0))
+(defvar img2b  (regionimagetocrackedgeimage(labelimage
+	    (watersheds-rg
 	     (ggradient 
 	      (resizeimage img 800 800 4)
 	      3.0))) 0.0))
@@ -185,7 +190,8 @@
 (delete-splineimageview siv)
 
 (print "saving resulting images")
-(saveimage img2  "lenna-relabeled-watersheds-on-resized-gradient-image.png")
+(saveimage img2a  "lenna-relabeled-watersheds-uf-on-resized-gradient-image.png")
+(saveimage img2b  "lenna-relabeled-watersheds-rg-on-resized-gradient-image.png")
 (saveimage img2_slic  "lenna-slic.png")
 (saveimage img2red_slic  "lenna-red-channel-slic.png")
 

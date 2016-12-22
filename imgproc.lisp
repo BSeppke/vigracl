@@ -200,22 +200,23 @@
 	(band :pointer)
 	(band2 :pointer)
 	(width :int)
-	(height :int))
+	(height :int)
+	(eight_connectivity :boolean))
 
-(defun localmaxima-band (band)
+(defun localmaxima-band (band &optional (eight_connectivity T))
   	(let* ((width  (band-width band))
 		   (height (band-height band))
 	 	   (band2  (make-band width height 0.0))
 		   (result (with-arrays-as-foreign-pointers
 						((band 	ptr_band  :float :lisp-type single-float) 
 						 (band2	ptr_band2 :float :lisp-type single-float))
-						(vigra_localmaxima_c ptr_band ptr_band2 width height))))
+						(vigra_localmaxima_c ptr_band ptr_band2 width height eight_connectivity))))
    		(case result
      		((0) band2)
       		((1) (error "Error in vigracl.imgproc:localmaxima: Extraction of local maxima of image failed!!")))))
 	  
-(defun localmaxima (image)
-  	(mapcar #'localmaxima-band image))
+(defun localmaxima (image &optional (eight_connectivity T))
+  	(mapcar #'(lambda (arr) (localmaxima-band arr eight_connectivity)) image))
   
 ;###############################################################################
 ;################### Extraction of local minima of an image ####################
@@ -223,22 +224,23 @@
 	(band :pointer)
 	(band2 :pointer)
 	(width :int)
-	(height :int))
+	(height :int)
+	(eight_connectivity :boolean))
 
-(defun localminima-band (band)
+(defun localminima-band (band &optional (eight_connectivity T))
   	(let* ((width  (band-width band))
 		   (height (band-height band))
 	 	   (band2  (make-band width height 0.0))
 		   (result (with-arrays-as-foreign-pointers
 						((band 	ptr_band  :float :lisp-type single-float) 
 						 (band2	ptr_band2 :float :lisp-type single-float))
-						(vigra_localminima_c ptr_band ptr_band2 width height))))
+						(vigra_localminima_c ptr_band ptr_band2 width height eight_connectivity))))
    		(case result
      		((0) band2)
       		((1) (error "Error in vigracl.imgproc:localminima: Extraction of local minima of image failed!!")))))
 	  
-(defun localminima (image)
-  	(mapcar #'localminima-band image))
+(defun localminima (image &optional (eight_connectivity T))
+  	(mapcar #'(lambda (arr) (localminima-band arr eight_connectivity))  image))
 
 
 ;###############################################################################

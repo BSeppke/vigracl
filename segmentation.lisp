@@ -6,46 +6,81 @@
 	(band :pointer)
 	(band2 :pointer)
 	(width :int)
-	(height :int))
+	(height :int)
+	(eight_connectivity :boolean))
 
-(defun labelimage-band (band)
+(defun labelimage-band (band  &optional (eight_connectivity T))
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
 	 	   (band2  (make-band width height 0.0))
 	 	   (result (with-arrays-as-foreign-pointers
 						((band  ptr_band  :float :lisp-type single-float) 
 						 (band2 ptr_band2 :float :lisp-type single-float))
-						(vigra_labelimage_c ptr_band ptr_band2 width height))))
+						(vigra_labelimage_c ptr_band ptr_band2 width height eight_connectivity))))
     	(if (= result -1)
 			(error "Error in vigracl.segmentation.labelimage: Labeling of image failed!")
      		band2)))
 
-(defun labelimage (image)
-  	(mapcar #'labelimage-band image))
+(defun labelimage (image  &optional (eight_connectivity T))
+  	(mapcar #'(lambda (arr) (labelimage-band arr eight_connectivity)) image))
 
 
 ;###############################################################################
 ;###################      Watershed Transform (Union-Find)  ####################
-(defcfun ("vigra_watersheds_c" vigra_watersheds_c) :int
+(defcfun ("vigra_watershedsunionfind_c" vigra_watershedsunionfind_c) :int
 	(band :pointer)
 	(band2 :pointer)
 	(width :int)
-	(height :int))
+	(height :int)
+	(eight_connectivity :boolean))
 
-(defun watersheds-band (band)
+(defun watersheds-uf-band (band &optional (eight_connectivity T))
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
 	 	   (band2  (make-band width height 0.0))
 	 	   (result (with-arrays-as-foreign-pointers
 						((band  ptr_band  :float :lisp-type single-float) 
 						 (band2 ptr_band2 :float :lisp-type single-float))
-						(vigra_watersheds_c ptr_band ptr_band2 width height))))
+						(vigra_watershedsunionfind_c ptr_band ptr_band2 width height eight_connectivity))))
     	(if (= result -1)
-			(error "Error in vigracl.segmentation.watersheds: Watershed transform of image failed!")
+			(error "Error in vigracl.segmentation.watersheds-uf: Watershed transform of image failed!")
      		band2)))
 	  
-(defun watersheds (image)
-  (mapcar #'watersheds-band image))
+(defun watersheds-uf (image &optional (eight_connectivity T))
+  (mapcar #'(lambda (arr) (watersheds-uf-band arr eight_connectivity)) image))
+
+;###############################################################################
+;###################  Watershed Transform (Region-growing)  ####################
+(defcfun ("vigra_watershedsregiongrowing_c" vigra_watershedsregiongrowing_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int)
+	(eight_connectivity :boolean)
+    (keep_contours :boolean)
+    (use_turbo :boolean)
+    (stop_cost :double))
+
+(defun watersheds-rg-band (band &optional (seeds-band '()) (eight_connectivity T) (keep_contours nil) (use_turbo nil) (stop-cost -1.0))
+  	(let* ((width  (band-width band))
+	 	   (height (band-height band))
+	 	   (band2 (if (null seeds-band)
+                      (band-map #'(lambda (p) (- p 1.0)) (labelimage-band (localminima-band band)))
+                      seeds-band))
+	 	   (result (with-arrays-as-foreign-pointers
+						((band  ptr_band  :float :lisp-type single-float) 
+						 (band2 ptr_band2 :float :lisp-type single-float))
+						(vigra_watershedsregiongrowing_c ptr_band ptr_band2 width height eight_connectivity keep_contours use_turbo (coerce stop-cost 'double-float)))))
+    	(if (= result -1)
+			(error "Error in vigracl.segmentation.watersheds-rg: Watershed transform of image failed!")
+     		band2)))
+	  
+(defun watersheds-rg (image &optional (seeds '()) (eight_connectivity T) (keep_contours nil) (use_turbo nil) (stop-cost -1.0))
+  (mapcar #'(lambda (arr seed_arr) (watersheds-rg-band arr seed_arr eight_connectivity keep_contours use_turbo stop-cost)) 
+  	image
+    (if (null seeds)
+        (image-map #'(lambda (p) (- p 1.0)) (labelimage (localminima image)))
+        seeds)))
 
 
 ;###############################################################################

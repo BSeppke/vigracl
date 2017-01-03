@@ -8,21 +8,31 @@
 	(width :int)
 	(height :int)
 	(eight_connectivity :boolean))
+	
+(defcfun ("vigra_labelimagewithbackground_c" vigra_labelimagewithbackground_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int)
+	(eight_connectivity :boolean)
+	(background :float))
 
-(defun labelimage-band (band  &optional (eight_connectivity T))
+(defun labelimage-band (band  &optional (eight_connectivity T) (background nil))
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
 	 	   (band2  (make-band width height 0.0))
 	 	   (result (with-arrays-as-foreign-pointers
 						((band  ptr_band  :float :lisp-type single-float) 
 						 (band2 ptr_band2 :float :lisp-type single-float))
-						(vigra_labelimage_c ptr_band ptr_band2 width height eight_connectivity))))
+						(if background
+							(vigra_labelimagewithbackground_c ptr_band ptr_band2 width height eight_connectivity background)
+							(vigra_labelimage_c ptr_band ptr_band2 width height eight_connectivity)))))
     	(if (= result -1)
 			(error "Error in vigracl.segmentation.labelimage: Labeling of image failed!")
      		band2)))
 
-(defun labelimage (image  &optional (eight_connectivity T))
-  	(mapcar #'(lambda (arr) (labelimage-band arr eight_connectivity)) image))
+(defun labelimage (image  &optional (eight_connectivity T)  (background nil))
+  	(mapcar #'(lambda (arr) (labelimage-band arr eight_connectivity background)) image))
 
 
 ;###############################################################################
@@ -65,7 +75,7 @@
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
 	 	   (band2 (if (null seeds-band)
-                      (band-map #'(lambda (p) (- p 1.0)) (labelimage-band (localminima-band band)))
+                      (array-map #'(lambda (p) (- p 1.0)) (labelimage-band (localminima-band band)))
                       seeds-band))
 	 	   (result (with-arrays-as-foreign-pointers
 						((band  ptr_band  :float :lisp-type single-float) 
@@ -214,3 +224,62 @@
 
 (defun regionimagetocrackedgeimage (image mark)
 	(mapcar #'(lambda (arr) (regionimagetocrackedgeimage-band arr mark)) image))
+	
+	
+	  
+;###############################################################################
+;###################           Feature Extraction            ###################    
+(defcfun ("vigra_extractfeatures_gray_c" vigra_extractfeatures_gray_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(width :int)
+	(height :int)
+    (max_label :int))
+
+(defun extractfeatures-band (band label-band  &optional (max_label (array-reduce #'max label-band 0.0)))
+  :lisp (sb-vm::set-floating-point-modes :traps '())
+  (let* ((ml     (round max_label))
+  		 (width  (band-width  band))
+         (height (band-height band))
+         (band3  (make-band (+ ml 1) 11))
+         (result (with-arrays-as-foreign-pointers
+						((band        ptr_band        :float :lisp-type single-float) 
+						 (label-band  ptr_label-band  :float :lisp-type single-float) 
+						 (band3       ptr_band3       :float :lisp-type single-float))
+				    (vigra_extractfeatures_gray_c ptr_band ptr_label-band ptr_band3 width height ml))))
+    (case result
+    	((0) band3)
+        ((1) (error	"Error in vigracl.segmentation.vigra_extractfeatures_gray_c: Region-wise feature extraction of gray image failed!")))))
+
+(defcfun ("vigra_extractfeatures_rgb_c" vigra_extractfeatures_rgb_c) :int
+	(band_r :pointer)
+	(band_g :pointer)
+	(band_b :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(width :int)
+	(height :int)
+    (max_label :int))
+    
+(defun extractfeatures-rgb (band_r band_g band_b label-band &optional (max_label (array-reduce #'max label-band 0.0)))
+  :lisp (sb-vm::set-floating-point-modes :traps '())
+  (let* ((ml     (round max_label))
+  		 (width  (band-width  band_r))
+         (height (band-height band_r))
+         (band3  (make-band (+ ml 1) 19))
+         (result (with-arrays-as-foreign-pointers
+						((band_r      ptr_r_band      :float :lisp-type single-float) 
+						 (band_g      ptr_g_band      :float :lisp-type single-float) 
+						 (band_b      ptr_b_band      :float :lisp-type single-float) 
+						 (label-band  ptr_label-band  :float :lisp-type single-float) 
+						 (band3       ptr_band3       :float :lisp-type single-float))
+					(vigra_extractfeatures_rgb_c ptr_r_band ptr_g_band ptr_b_band ptr_label-band ptr_band3 width height ml))))
+    (case result
+    	((0) band3)
+        ((1) (error	"Error in vigracl.segmentation.vigra_extractfeatures_rgb_c: Region-wise feature extraction of rgb image failed!")))))
+	  
+(defun extractfeatures (image labels &optional (max_label (image-reduce #'max labels 0.0)))
+  (if (and (= (length image) 3) (= (length labels) 1))
+      (list (extractfeatures-rgb (first image) (second image) (third image) (first labels)))
+      (mapcar #'extractfeatures-band image labels max_label)))

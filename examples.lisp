@@ -134,6 +134,48 @@
 (print "performing SLIC segmentation on red channel of lenna image")
 (defvar img2red_slic  (regionimagetocrackedgeimage  (slic (image->red img)) 0.0))
 
+;Testing the vigra w.r.t. watershed segmentation and the mean image of a given image
+(defun meanColorImage (segmentation image)
+  (let ((image_stats (extractfeatures image segmentation)))
+      (if (= (image-height image_stats) 19)
+          (flet ((region->meanColorBand (col_id region_id)   (image-ref image_stats (round region_id) col_id 0)))
+              (list (array-map (curry #'region->meanColorBand 13) (first segmentation))
+                    (array-map (curry #'region->meanColorBand 14) (first segmentation))
+                    (array-map (curry #'region->meanColorBand 15) (first segmentation))))
+          (flet ((band->meanColorBand (im_b st_b)
+                                         	(array-map #'(lambda (region_id)
+                                                    		(aref st_b (round region_id) 9))
+                                                   		im_b)))
+              (mapcar #'band->meanColorBand segmentation image_stats))))) 
+
+(defvar label_img (watersheds-rg (ggradient (image->green img) 2.0)))
+(defvar wt_stats (extractfeatures img label_img))
+
+(print "Statistics for WT of lenna's green channel")
+(do* ((i 0 (+ i 1)))
+    ((= i (- (array-dimension (car wt_stats) 0) 1)))
+    	(format t "Region ~A:~%    Size ~A~%    UL: ~A    LR: ~A    CNT: ~A~%    Min. Color ~A    Max. Color ~A~%    Mean Color ~A~%    Std.dev. Color ~A ~%" 
+    		i
+    		(aref (car wt_stats) i 0)
+    		(list (aref (car wt_stats) i 1) (aref (car wt_stats) i 2))
+    		(list (aref (car wt_stats) i 3) (aref (car wt_stats) i 4))
+    		(list (aref (car wt_stats) i 5) (aref (car wt_stats) i 6))
+    		(if (= (band-height (car wt_stats)) 19)
+    			(list (aref (car wt_stats) i 7)(aref (car wt_stats) i 8)(aref (car wt_stats) i 9))
+    			(aref (car wt_stats) i 7))
+    		(if (= (band-height (car wt_stats)) 19)
+    			(list (aref (car wt_stats) i 10)(aref (car wt_stats) i 11)(aref (car wt_stats) i 12))
+    			(aref (car wt_stats) i 8))
+    		(if (= (band-height (car wt_stats)) 19)
+    			(list (aref (car wt_stats) i 13)(aref (car wt_stats) i 14)(aref (car wt_stats) i 15))
+    			(aref (car wt_stats) i 9))
+    		(if (= (band-height (car wt_stats)) 19)
+    			(list (aref (car wt_stats) i 16)(aref (car wt_stats) i 17)(aref (car wt_stats) i 18))
+    			(aref (car wt_stats) i 10))))
+
+(defvar img2_wt_mc (regionimagetocrackedgeimage (meanColorImage label_img img) 0.0))
+(defvar img2_slic_mc (regionimagetocrackedgeimage (meanColorImage (slic img) img) 0.0))
+
 (print "testing rotation and reflection functions on image")
 (defvar img4 (reflectimage img 3))
 (defvar img5 (rotateimage img 15.0 3))
@@ -194,6 +236,8 @@
 (saveimage img2b  "lenna-relabeled-watersheds-rg-on-resized-gradient-image.png")
 (saveimage img2_slic  "lenna-slic.png")
 (saveimage img2red_slic  "lenna-red-channel-slic.png")
+(saveimage img2_wt_mc  "lenna-wt-mc.png")
+(saveimage img2_slic_mc  "lenna-red-channel-slic-mc.png")
 
 (saveimage img4  "lenna-reflected-both.png")
 (saveimage img5  "lenna-rotated-15deg.png")

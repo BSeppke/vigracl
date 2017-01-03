@@ -39,11 +39,35 @@
 	    				  (apply func (mapcar #'(lambda(array) (aref array i j)) arrays))))))))
 (compile 'array-map)
 
-(defun image-map (func &rest images)  
+
+
+;; Do broadcasting of bands iff all channel sizes are equally large and some
+;; do just have one channel -> pump the single channels up!
+(defun band-broadcasting (images)
+  (if (null images)
+      '()
+      (let* ((all_band_counts (mapcar #'length images))
+             (max_band_count  (apply #'max all_band_counts))
+             (all_equal?      (every #'(lambda (x) (or (= 1 x) (= max_band_count x))) all_band_counts)))
+        (if all_equal?
+            (if (> max_band_count 1)
+               (mapcar #'(lambda (img) (if (= (length img) max_band_count)
+                                      img
+                                      (make-list max_band_count :initial-element (car img))))
+                    images)
+               images)
+            (error "vigracl.helpers.band-broadcasting: Cannot broadcast bands for processing!")))))
+
+
+(defun image-map/unsafe (func &rest images)  
   	(if (null (car images))
       	'()
-      	(cons (apply (curry #'array-map func) (mapcar #'car images))
-          	  (apply (curry #'image-map func) (mapcar #'cdr images)))))
+      	(cons (apply (curry #'array-map func)        (mapcar #'car images))
+          	  (apply (curry #'image-map/unsafe func) (mapcar #'cdr images)))))
+(compile 'image-map/unsafe)
+
+(defun image-map (func &rest images)  
+	(apply (curry #'image-map/unsafe func) (band-broadcasting images)))
 (compile 'image-map)
 
 (defun array-map! (func &rest arrays)  
@@ -61,11 +85,15 @@
 	    				  (apply func (mapcar #'(lambda(array) (aref array i j)) arrays))))))))
 (compile 'array-map!)
 
-(defun image-map! (func &rest images)  
+(defun image-map!/unsafe (func &rest images)  
   	(if (null (car images))
 		'()
-      	(cons (apply (curry #'array-map! func) (mapcar #'car images))
-        	  (apply (curry #'image-map! func) (mapcar #'cdr images)))))
+      	(cons (apply (curry #'array-map! func)        (mapcar #'car images))
+        	  (apply (curry #'image-map!/unsafe func) (mapcar #'cdr images)))))
+(compile 'image-map!/unsafe)
+
+(defun image-map! (func &rest images)  
+	(apply (curry #'image-map!/unsafe func) (band-broadcasting images)))
 (compile 'image-map!)
 
 (defun array-reduce (func array seed)  

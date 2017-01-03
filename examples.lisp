@@ -180,6 +180,12 @@
 (defvar img4 (reflectimage img 3))
 (defvar img5 (rotateimage img 15.0 3))
 
+(print "testing band broadcasting")
+(defvar img_t (image-map #'*
+				img 
+				(image-map #'(lambda (x) (if (< 100 x) 1.0 0.0))
+					(image->green img))))
+
 
 (defvar matrix (make-array '(3 3)
                     :element-type '(double-float)
@@ -242,6 +248,7 @@
 (saveimage img4  "lenna-reflected-both.png")
 (saveimage img5  "lenna-rotated-15deg.png")
 (saveimage img5aff  "lenna-rotated-15deg-aff.png")
+(saveimage img_t  "lenna-masked.png")
 (saveimage img6  "lenna-disttransform-on-canny.png")
 (saveimage img7  "lenna-diff_of_exp.png")
 (saveimage img8  "lenna-gsmooth-3.0.png")

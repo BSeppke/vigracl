@@ -47,7 +47,7 @@
  		(let* ((result (split-string-at-newline 
  							(with-output-to-string 
  								(asdf::*verbose-out*) 
- 								(asdf:run-shell-command command))))
+ 								(asdf:run-shell-command command)))))
  		(if (> (length result) 1)
  			(apply #'concatenate 'string (cdr result))  ;;Everything is okay - return the result (string list), else return NIL(FALSE):
  			NIL))

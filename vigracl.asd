@@ -31,7 +31,7 @@
   :author "Benjamin Seppke"
   :maintainer "Benjamin Seppke"
   :licence "MIT"
-  :depends-on (waaf-cffi trivial-shell)
+  :depends-on (waaf-cffi uiop)
   :components
    ((:file "package")
     (:file "config")

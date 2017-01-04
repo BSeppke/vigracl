@@ -20,7 +20,7 @@
 ;; Define the filename of the foreign library depending on the OS
 (defvar vigracl-dylib-file
 	#+darwin  "libvigra_c.dylib"
-	#+unix	  "libvigra_c.so"
+	#+unix    "libvigra_c.so"
 	#+windows "vigra_c.dll")
 	
 (defvar vigracl-dylib-path (merge-pathnames vigracl-path vigracl-dylib-file))
@@ -37,13 +37,15 @@
                          	  (merge-pathnames vigra_c-path "fallback.profile")))
 
 (defun easy-system-call (command)
- 	(let* ((result (multiple-value-list (trivial-shell:shell-command command))))
+ 	(let* ((result (multiple-value-list (uiop:run-program command))))
  		(if (eq (caddr result) 0)
  			(car result)  ;;Everything is okay - return the result (string), else return NIL(FALSE):
  			NIL)))
  			
 (defvar login_cmd (concatenate 'string "source " (namestring login_script)))
-(defun system-env (arg) (easy-system-call (concatenate 'string login_cmd " && " arg)))
+(defun system-env (arg) 
+	#+unix	  (easy-system-call (concatenate 'string login_cmd " && " arg))
+	#+windows (easy-system-call arg) )
 
 (defun vigra-version ()
   (let* ((version_string (system-env "vigra-config --version")))
@@ -56,7 +58,7 @@
   (print "Searching for vigra >= 1.11.0 using 'vigra-config --version':")
   (let ((version (vigra-version)))
     (if (null version)
-        F
+        NIL
         (or (and (= (first version) 1) (>= (second version) 11))
                 (> (first version) 1)))))
   
@@ -70,10 +72,12 @@
                  (error "making the vigra_c lib failed, although vigra seems to be installed"))
          	(error "Vigra is not found. Please check if the prefix path is set correctly in HOME/.profile environment file!"))
          	
-  #+windows (progn
-               (easy-system-call (concatenate 'string "copy " (namestring vigra_c-bin-path) "\\win" (write-to-string cl-bits) "\\*.dll "
-               												  (namestring vigracl-path)))
-               T)
+  #+windows (let* ((bin_dir (concatenate 'string (namestring vigra_c-bin-path) "win" (write-to-string cl-bits) "/"))
+				   (binaries (uiop:directory-files bin_dir "*.dll"))
+				   (target_dir (concatenate 'string (namestring vigracl-path) "/")))
+				(progn
+					(mapcar #'(lambda (f) (uiop:copy-file f (concatenate 'string target_dir (pathname-name f) ".dll"))) binaries)
+					T))
 )
 
 ;;Enable Auto-Build of the vigra-c-lib if not already present!

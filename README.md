@@ -21,13 +21,12 @@ Note, that for Windows, you also need to have installed the MS VC-Runtime (2010)
 The formerly private development of a vigra-wrapper to (commercial) AllegroCommonLisp only has evolved to work with all major and freely available LISPs, like e.g. CLISP and SBCL. Therefore, you must have already installed the vigra. 
 Additionally it relies on the following dependencies, which need to be installed over asdf before the VigraCL may be used:
 
- * asdf 
+ * asdf (includes also needed uiop)
  * alexandria (needed by cffi)
  * babel (needed by cffi)
  * trivial-features (needed by cffi)
  * cffi (needed by waaf-cffi)
  * waaf-cffi
- * trivial-shell
 
 3. Installation
 -----------------------------------
@@ -38,7 +37,6 @@ After setting up asdf and installing, you may add the folder of your VigraCL-Rep
     (push #P"~/development/lisp-packages/babel/" asdf:\*central-registry*)
     (push #P"~/development/lisp-packages/alexandria/" asdf:\*central-registry*)
     (push #P"~/development/lisp-packages/trivial-features/" asdf:\*central-registry*)
-    (push #P"~/development/lisp-packages/trivial-shell/" asdf:\*central-registry*)
     (push #P"~/development/lisp-packages/cffi/" asdf:\*central-registry*)
     (push #P"~/development/lisp-packages/waaf-cffi/" asdf:\*central-registry*)
     (push #P"~/development/vigracl/" asdf:\*central-registry*)

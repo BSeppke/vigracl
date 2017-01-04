@@ -5,11 +5,17 @@
 (defvar vigracl-version "1.0.0")
 
 ;;According to the cl-cookbook
-(defun split-string-at-dot (string)
+(defun split-string-at-char (string char)
     (loop for i = 0 then (1+ j)
-          as j = (position #\. string :start i)
+          as j = (position char string :start i)
           collect (subseq string i j)
           while j))
+
+(defun split-string-at-dot (string)
+    (split-string-at-char string #\.))
+    
+(defun split-string-at-newline (string)
+    (split-string-at-char string #\newline))
 
 ;; For windows, we need to find out, which architecture CL is built
 (defvar cl-bits (* 8 (foreign-type-size :pointer)))
@@ -37,10 +43,15 @@
                          	  (merge-pathnames vigra_c-path "fallback.profile")))
 
 (defun easy-system-call (command)
- 	(let* ((result (multiple-value-list (uiop:run-program command))))
- 		(if (eq (caddr result) 0)
- 			(car result)  ;;Everything is okay - return the result (string), else return NIL(FALSE):
- 			NIL)))
+ 	(if (eq (uiop:run-program command) NIL)
+ 		(let* ((result (split-string-at-newline 
+ 							(with-output-to-string 
+ 								(asdf::*verbose-out*) 
+ 								(asdf:run-shell-command command))))
+ 		(if (> (length result) 1)
+ 			(apply #'concatenate 'string (cdr result))  ;;Everything is okay - return the result (string list), else return NIL(FALSE):
+ 			NIL))
+ 		NIL))
  			
 (defvar login_cmd (concatenate 'string "source " (namestring login_script)))
 (defun system-env (arg) 

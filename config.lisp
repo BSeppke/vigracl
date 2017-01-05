@@ -19,7 +19,7 @@
 
 ;; For windows, we need to find out, which architecture CL is built
 (defvar cl-bits (* 8 (foreign-type-size :pointer)))
-(defvar cmake_flags (if (= cl-bits 32)
+(defvar cmake-flags (if (= cl-bits 32)
                         "-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_C_FLAGS=-m32"
                         "-DCMAKE_BUILD_TYPE=Release"))
 
@@ -31,18 +31,10 @@
 	
 (defvar vigracl-dylib-path (merge-pathnames vigracl-path vigracl-dylib-file))
 
-
-;; Stuff needed to compile the c-bindings if necessary...
-(defvar base_login_script "~/.profile")
-
 (defvar vigra_c-path 	 (merge-pathnames "vigra_c/" vigracl-path))
 (defvar vigra_c-bin-path (merge-pathnames "bin/" vigra_c-path))
 
-(defvar login_script (if (probe-file base_login_script)
-                        	  (truename base_login_script)
-                         	  (merge-pathnames vigra_c-path "fallback.profile")))
-
-(defun easy-system-call (command)
+(defun system-call (command)
  	(if (eq (uiop:run-program command) NIL)
  		(let* ((result (split-string-at-newline 
  							(with-output-to-string 
@@ -52,14 +44,9 @@
  			(apply #'concatenate 'string (cdr result))  ;;Everything is okay - return the result (string list), else return NIL(FALSE):
  			NIL))
  		NIL))
- 			
-(defvar login_cmd (concatenate 'string "source " (namestring login_script)))
-(defun system-env (arg) 
-	#+unix	  (easy-system-call (concatenate 'string login_cmd " && " arg))
-	#+windows (easy-system-call arg) )
 
 (defun vigra-version ()
-  (let* ((version_string (system-env "vigra-config --version")))
+  (let* ((version_string (system-call "vigra-config --version")))
     (if (> (length version_string) 0)
         (progn (stringp version_string)
                (mapcar #'parse-integer (split-string-at-dot version_string)))
@@ -77,8 +64,8 @@
 (defun build-vigra_c ()
   #+unix (if (vigra-installed?)
          	 ;;VIGRA is found! Try to compile vigra_c bindings
-          	 (if (stringp (system-env (concatenate 'string  "cd " (namestring vigra_c-path) " && mkdir -p build && cd build && cmake " cmake_flags " .. && make && cd .. && rm -rf ./build")))
-                 (stringp (system-env (concatenate 'string  "cp " (namestring (merge-pathnames vigra_c-bin-path vigracl-dylib-file)) " "
+          	 (if (stringp (system-call (concatenate 'string  "cd " (namestring vigra_c-path) " && mkdir -p build && cd build && cmake " cmake-flags " .. && make && cd .. && rm -rf ./build")))
+                 (stringp (system-call (concatenate 'string  "cp " (namestring (merge-pathnames vigra_c-bin-path vigracl-dylib-file)) " "
                 								  		  (namestring vigracl-dylib-path))))
                  (error "making the vigra_c lib failed, although vigra seems to be installed"))
          	(error "Vigra is not found. Please check if the prefix path is set correctly in HOME/.profile environment file!"))

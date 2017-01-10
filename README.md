@@ -6,13 +6,13 @@ Use the power of the computer vision library VIGRA by means of "good old" common
 1. Prerequisites (VIGRA)
 -----------------------------------
 
-For Linux and Mac OS X, the vigra Computer Vision library needs to be installed. I recommend the use of a version > 1.9.0, but lower versions may also work. The easiest way to do so, is using your favorite package manager under linux or using MacPorts und  Mac OS X. Otherwise you need to pay attention to install all the needed dependencies on your own.
+For Linux and Mac OS X, the vigra Computer Vision library needs to be installed. I recommend the use of a version > 1.11.0. The easiest way to do so, is using your favorite package manager under linux or using MacPorts und  Mac OS X. Otherwise you need to pay attention to install all the needed dependencies on your own.
 
 <b>Attention:</b> Under linux (Ubuntu) I encountered an installation problem of the vigra, such that `vigra-config --libs` pointed to a non-existing file. I was able to solve this by copying the necessary binary to the right position:
 
     sudo cp /usr/local/lib/libvigraimpex.* /usr/lib/x86_64-linux-gnu
 
-Note, that for Windows, you also need to have installed the MS VC-Runtime (2010) in order to get these binaries running.
+Note, that for Windows, you also need to have installed the MS VC-Runtime (2012) in order to get these binaries running.
 
 
 2. Prerequisites (Common Lisp)

@@ -102,6 +102,8 @@
 
 (defvar imgfft (image-map #'complex-magnitude (first imgrectfft) (second imgrectfft)))
 
+(defvar imgrectfft-ifft (fouriertransforminverse imgrectfft))
+
 ; Save:
 ;real part
 (print "saving resulting fft images")
@@ -114,6 +116,10 @@
 (saveimage (image-map #'sqrt imgfft) "rect-fft-sqrt.png")
 ;amplitude (log scaled)
 (saveimage (image-map #'log imgfft) "rect-fft-log.png")
+;iFFT, real part
+(saveimage (first imgrectfft-ifft) "rect-fft-ifft-real.png")
+;iFFT, imaginary part
+(saveimage (second imgrectfft-ifft) "rect-fft-ifft-imag.png")
 
 ;Testing vigra methods
 (print "performing watershed transform on resized gradient image")

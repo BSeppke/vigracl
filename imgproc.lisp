@@ -129,10 +129,40 @@
 						(vigra_fouriertransform_c ptr_band ptr_band2 ptr_band3 width height))))
     	(case result
      		((0) (list band2 band3))
-      		((1) (error "Error in vigracl.imgproc:fouriertransform: FastFourier Transform of image failed!!")))))
+      		((1) (error "Error in vigracl.imgproc:fouriertransform: Fast Fourier Transform of image failed!!")))))
 
 (defun fouriertransform (image)
   	(pivot-list (mapcar #'fouriertransform-band image)))
+	  
+
+;###############################################################################
+;###################      Inverse Fast Fourier Transform    ####################
+(defcfun ("vigra_fouriertransforminverse_c" vigra_fouriertransforminverse_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(band4 :pointer)
+	(width :int)
+	(height :int))
+
+(defun fouriertransforminverse-band (band_real band_imag)
+  	(let* ((width  (band-width band_real))
+		   (height (band-height band_imag))
+	 	   (band3  (make-band width height 0.0))
+	 	   (band4  (make-band width height 0.0))
+		   (result (with-arrays-as-foreign-pointers
+						((band_real	ptr_band_real :float :lisp-type single-float) 
+						 (band_imag	ptr_band_imag :float :lisp-type single-float) 
+						 (band3	ptr_band3 :float :lisp-type single-float) 
+						 (band4	ptr_band4 :float :lisp-type single-float))
+						(vigra_fouriertransforminverse_c ptr_band_real ptr_band_imag ptr_band3 ptr_band4 width height))))
+    	(case result
+     		((0) (list band3 band4))
+      		((1) (error "Error in vigracl.imgproc:fouriertransforminverse: Inverse Fast Fourier Transform of image failed!!")))))
+
+(defun fouriertransforminverse (fft_image)
+  	(pivot-list (mapcar #'fouriertransforminverse-band (first fft_image) (second fft_image))))
+
 
 ;###############################################################################
 ;###################        Fast cross correlation          ####################

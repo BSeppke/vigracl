@@ -197,19 +197,24 @@
 
 ; image -> channel bands
 (defun image->red-band (image)
-	(if (= (image-numbands image) 3)
+	(if (<= 3 (image-numbands image) 4)
     	(image-band image 0)
-    	"Error in vigracl.helpers.image->red-band: Band extraction is only allowed for 3-channel RGB images"))
+    	"Error in vigracl.helpers.image->red-band: Band extraction is only allowed for 3(4)-channel RGB(A) images"))
 
 (defun image->green-band (image)
-  	(if (= (image-numbands image) 3)
+  	(if (<= 3 (image-numbands image) 4)
      	(image-band image 1)
-     	"Error in vigracl.helpers.image->green-band: Band extraction is only allowed for 3-channel RGB images"))
+     	"Error in vigracl.helpers.image->green-band: Band extraction is only allowed for 3(4)-channel RGB(A) images"))
 
 (defun image->blue-band (image)
-  	(if (= (image-numbands image) 3)
+  	(if (<= 3 (image-numbands image) 4)
       	(image-band image 2)
-      	"Error in vigracl.helpers.image->blue-band: Band extraction is only allowed for 3-channel RGB images"))
+      	"Error in vigracl.helpers.image->blue-band: Band extraction is only allowed for 3(4)-channel RGB(A) images"))
+
+(defun image->alpha-band (image)
+  	(if (= (image-numbands image) 4)
+      	(image-band image 3)
+      	"Error in vigracl.helpers.image->alpha-band: Band extraction is only allowed for 4-channel RGBA images"))
 
 ; image -> channel images
 (defun image->red (image)
@@ -220,3 +225,6 @@
 
 (defun image->blue (image)
   	(list (image->blue-band image)))
+
+(defun image->alpha (image)
+  	(list (image->alpha-band image)))

@@ -90,11 +90,11 @@
 (defvar img1_st_hg (hourglassfilter img1_st 1.0 1.0))
 
 ;FFT Tests following
-(defvar imgrect (load-example-image  "rect.gif"))
+(defvar imgrect (load-example-image  "rect.png"))
 
 ;do fast fourier transform
 (print "performing fft on image")
-(time (defvar imgrectfft (fouriertransform imgrect)))
+(time (defvar imgrectfft (fouriertransform (image->alpha imgrect))))
 
 ;Calculate the amplitude of the frequency spectrum
 (defun complex-magnitude (real imag)

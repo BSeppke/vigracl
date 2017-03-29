@@ -182,3 +182,12 @@
     	(else (error "Error in vigracl.impex.saveimage: Image has neither 1 nor 3 nor 4 bands and thus cannot be saved!"))))
 (defun save-image  (image filename) (saveimage image filename))
 (defun image-save  (image filename) (saveimage image filename))
+
+;####### Fake image viewer using ImageMagick's display command line tool
+(defun show-image (img)
+	(let* ((ticks (get-universal-time))
+	       (filename (concatenate 'string "viewing" (write-to-string ticks) ".png"))
+	       (fullname (concatenate 'string (namestring (uiop:temporary-directory)) filename)))
+		(saveimage img fullname)
+	    (uiop:run-program (concatenate 'string "display " fullname " & "))
+	    t))

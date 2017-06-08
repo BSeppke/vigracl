@@ -78,10 +78,10 @@
 					T))
 )
 
-;;Enable Auto-Build of the vigra-c-lib if not already present!
-(unless (probe-file vigracl-dylib-path)
-   (build-vigra_c))
-   
-(load-foreign-library vigracl-dylib-path)
-
+;;Enable Auto-Build of the vigra-c-lib if cannot be loaded!
+(handler-case
+	(load-foreign-library vigracl-dylib-path)
+	(error () (progn
+				(build-vigra_c)
+				(load-foreign-library vigracl-dylib-path))))
 

@@ -242,7 +242,7 @@
   (let* ((ml     (round max_label))
   		 (width  (band-width  band))
          (height (band-height band))
-         (band3  (make-band (+ ml 1) 11))
+         (band3  (make-band (+ ml 1) 16))
          (result (with-arrays-as-foreign-pointers
 						((band        ptr_band        :float :lisp-type single-float) 
 						 (label-band  ptr_label-band  :float :lisp-type single-float) 
@@ -267,7 +267,7 @@
   (let* ((ml     (round max_label))
   		 (width  (band-width  band_r))
          (height (band-height band_r))
-         (band3  (make-band (+ ml 1) 19))
+         (band3  (make-band (+ ml 1) 25))
          (result (with-arrays-as-foreign-pointers
 						((band_r      ptr_r_band      :float :lisp-type single-float) 
 						 (band_g      ptr_g_band      :float :lisp-type single-float) 

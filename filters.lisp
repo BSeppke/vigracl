@@ -9,9 +9,10 @@
 	(width :int)
 	(height :int)
 	(kernel_width :int)
-	(kernel_height :int))
+	(kernel_height :int)
+	(border_treatment :int))
 	
-(defun convolveimage-band (band kernelMat)
+(defun convolveimage-band (band kernelMat &optional (border_treatment 3)) ;;BT Mode default: REFLECT
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
 	 	   (kernel_width  (band-width kernelMat))
@@ -21,14 +22,15 @@
 						((band  	ptr_band  	  :float  :lisp-type single-float)  
 						 (kernelMat	ptr_kernelMat :double :lisp-type double-float)
 						 (band2 	ptr_band2 	  :float  :lisp-type single-float))
-						(vigra_convolveimage_c ptr_band ptr_kernelMat ptr_band2 width height  kernel_width kernel_height))))
+						(vigra_convolveimage_c ptr_band ptr_kernelMat ptr_band2 width height  kernel_width kernel_height border_treatment))))
     	(case result
      		((0) band2)
      		((1) (error "Error in vigracl.filters.colvolveimage: Convolution with kernel failed!"))
-      		((2) (error "Error in vigracl.filters.colvolveimage: Kernel dimensions must be odd!")))))
+      		((2) (error "Error in vigracl.filters.colvolveimage: Kernel dimensions must be odd!"))
+      		((3) (error "Error in vigracl.filters.colvolveimage: Border treatment mode must be in [0, ..., 5]!")))))
 
-(defun convolveimage (image kernelMat)
-  	(mapcar #'(lambda (arr) (convolveimage-band arr kernelMat)) image))
+(defun convolveimage (image kernelMat &optional (border_treatment 3)) ;;BT Mode default: REFLECT
+  	(mapcar #'(lambda (arr) (convolveimage-band arr kernelMat border_treatment)) image))
 
 
 ;###############################################################################
@@ -41,9 +43,10 @@
 	(width :int)
 	(height :int)
 	(kernel_width :int)
-	(kernel_height :int))
+	(kernel_height :int)
+	(border_treatment :int))
 
-(defun separableconvolveimage-band (band kernel_h kernel_v)
+(defun separableconvolveimage-band (band kernel_h kernel_v &optional (border_treatment 3)) ;;BT Mode default: REFLECT
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
 	 	   (kernel_width  (band-width kernel_h))
@@ -54,14 +57,15 @@
 						 (kernel_h	ptr_kernel_h :double :lisp-type double-float) 
 						 (kernel_v	ptr_kernel_v :double :lisp-type double-float)
 						 (band2 	ptr_band2 	 :float  :lisp-type single-float))
-						(vigra_separableconvolveimage_c ptr_band ptr_kernel_h  ptr_kernel_v ptr_band2 width height  kernel_width kernel_height))))
+						(vigra_separableconvolveimage_c ptr_band ptr_kernel_h  ptr_kernel_v ptr_band2 width height  kernel_width kernel_height border_treatment))))
     	(case result
      		((0) band2)
      		((1) (error "Error in vigracl.filters.separablecolvolveimage: Convolution with kernel failed!"))
-      		((2) (error "Error in vigracl.filters.separablecolvolveimage: Kernel dimensions must be odd!")))))
+      		((2) (error "Error in vigracl.filters.separablecolvolveimage: Kernel dimensions must be odd!"))
+     	    ((3) (error "Error in vigracl.filters.separablecolvolveimage: Border treatment mode must be in [0, ..., 5]!")))))
 
-(defun separableconvolveimage (image kernel_h kernel_v)
-  	(mapcar #'(lambda (arr) (separableconvolveimage-band arr kernel_h kernel_v)) image))
+(defun separableconvolveimage (image kernel_h kernel_v &optional (border_treatment 3)) ;;BT Mode default: REFLECT
+  	(mapcar #'(lambda (arr) (separableconvolveimage-band arr kernel_h kernel_v border_treatment)) image))
 
 
 ;###############################################################################

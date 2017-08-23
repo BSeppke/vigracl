@@ -53,7 +53,7 @@
 (print "vigra-implicit-method:")
 (time (defvar img_ig  (gsmooth img 0.5)))
 (print "vigra-std.-convolution-method:")
-(time (defvar img_eg (convolveimage img gauss_kernel)))
+(time (defvar img_eg (convolveimage img gauss_kernel 2))) ;;BT Mode default: REPEAT
 (print "my-own-method:")
 (time (defvar img_mg (mapcar #'mysmooth-band img)))
 

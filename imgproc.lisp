@@ -11,7 +11,7 @@
 	(height2 :int)
 	(resample_mode :int))
 
-(defun resizeimage-band (band width2 height2 resample_mode)
+(defun resizeimage-band (band width2 height2  &optional (resample_mode 2)) ; = bi-quadratic interpolation
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
 	 	   (band2  (make-band width2 height2 0.0))
@@ -24,7 +24,7 @@
       		((1) (error "Error in vigracl.imgproc:resizeimage: Resize of image failed!!"))
       		((2) (error "Error in vigracl.imgproc:resizeimage: Resample mode must be in {0,1,2,3,4}!!")))))
 
-(defun resizeimage (image width2 height2 resample_mode)
+(defun resizeimage (image width2 height2 &optional (resample_mode 2)) ; = bi-quadratic interpolation
   (mapcar #'(lambda (arr) (resizeimage-band arr width2 height2 resample_mode)) image))
 
 
@@ -38,7 +38,7 @@
 	(angle :float)
 	(resample_mode :int))
 
-(defun rotateimage-band (band angle resample_mode)
+(defun rotateimage-band (band angle &optional (resample_mode 2)) ; = bi-quadratic interpolation
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
 	 	   (band2  (make-band width height 0.0))
@@ -51,7 +51,7 @@
      		((1) (error "Error in vigracl.imgproc:rotateimage: Rotation of image failed!!"))
       		((2) (error "Error in vigracl.imgproc:rotateimage: Resample mode must be in {0,1,2,3,4}!!")))))
 
-(defun rotateimage (image angle resample_mode)
+(defun rotateimage (image angle &optional (resample_mode 2)) ; = bi-quadratic interpolation
 	(mapcar #'(lambda (arr) (rotateimage-band arr angle resample_mode)) image))
 
 ;###############################################################################
@@ -65,7 +65,7 @@
 	(resample_mode :int))
 
 
-(defun affinewarpimage-band (band affineMat resample_mode)
+(defun affinewarpimage-band (band affineMat  &optional (resample_mode 2)) ; = bi-quadratic interpolation
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
 	 	   (band2  (make-band width height 0.0))
@@ -79,7 +79,7 @@
       		((1) (error "Error in vigracl.imgproc:affinewarpimage: Affine Warp  of image failed!!"))
       		((2) (error "Error in vigracl.imgproc:affinewarpimage: Resample mode must be in {0,1,2,3,4}!!")))))
 
-(defun affinewarpimage (image affinematrix resample_mode)
+(defun affinewarpimage (image affinematrix  &optional (resample_mode 2)) ; = bi-quadratic interpolation
   	(mapcar #'(lambda (arr) (affinewarpimage-band arr affinematrix resample_mode)) image))
 
 ;###############################################################################
@@ -315,9 +315,10 @@
 	(left :int)
 	(upper :int)
 	(right :int)
-	(lower :int))
+	(lower :int)
+	(value :float))
 
-(defun paddimage-band (band left upper right lower)
+(defun paddimage-band (band left upper right lower &optional (value 0.0)) ; fills border with zeros
   	(let* ((width  (band-width band))
 	 	   (height (band-height band))
            (padd_width (+ right width left))
@@ -326,11 +327,15 @@
 	 	   (result (with-arrays-as-foreign-pointers
 						((band  ptr_band  :float :lisp-type single-float) 
 						 (band2 ptr_band2 :float :lisp-type single-float) )
-						(vigra_paddimage_c ptr_band ptr_band2 width height left upper right lower))))
+						(vigra_paddimage_c ptr_band ptr_band2 width height left upper right lower value))))
    		(case result
       		((0) band2)
       		((1) (error "Error in vigracl.imgproc:paddimage: Padded image creation failed!!"))
       		((2) (error "Error in vigracl.imgproc:paddimage: Constraints not fulfilled: left & right >= 0, upper & lower >= 0!!")))))
 
-(defun paddimage (image left upper right lower)
-  (mapcar #'(lambda (arr) (paddimage-band arr left upper right lower)) image))
+(defun paddimage (image left upper right lower &optional (value '())) ; fills border with zeros
+	(let* ((band_count (image-numbands image))
+    	   (fill_value (if (null value)
+                           (make-list band_count :initial-element 0.0)
+                            value)))
+  (mapcar #'(lambda (arr value) (paddimage-band arr left upper right lower value)) image fill_value)))

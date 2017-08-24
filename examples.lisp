@@ -47,7 +47,7 @@
 (print "loading lenna-image")
 (defvar img (load-example-image "lenna_face.png"))
 
-(defvar img_padd (paddimage img 10 20 30 40))
+(defvar img_padd (paddimage img 10 20 30 40 '(255.0 0.0 0.0))) ;;Padd with red bg
 
 (print "performance test gaussian smoothing")
 (print "vigra-implicit-method:")
@@ -256,6 +256,7 @@
 (delete-splineimageview siv)
 
 (print "saving resulting images")
+(saveimage img_padd  "lenna-padded.png")
 (saveimage img2a  "lenna-relabeled-watersheds-uf-on-resized-gradient-image.png")
 (saveimage img2b  "lenna-relabeled-watersheds-rg-on-resized-gradient-image.png")
 (saveimage img2_slic  "lenna-slic.png")

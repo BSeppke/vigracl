@@ -323,11 +323,11 @@
 	 	   (height (band-height band))
            (padd_width (+ right width left))
            (padd_height (+ lower height upper))
-	 	   (band2  (make-band padd_width padd_height 0.0))
+	 	   (band2  (make-band padd_width padd_height value))
 	 	   (result (with-arrays-as-foreign-pointers
 						((band  ptr_band  :float :lisp-type single-float) 
 						 (band2 ptr_band2 :float :lisp-type single-float) )
-						(vigra_paddimage_c ptr_band ptr_band2 width height left upper right lower value))))
+						(vigra_paddimage_c ptr_band ptr_band2 width height left upper right lower))))
    		(case result
       		((0) band2)
       		((1) (error "Error in vigracl.imgproc:paddimage: Padded image creation failed!!"))

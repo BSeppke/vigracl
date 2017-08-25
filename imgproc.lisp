@@ -315,8 +315,7 @@
 	(left :int)
 	(upper :int)
 	(right :int)
-	(lower :int)
-	(value :float))
+	(lower :int))
 
 (defun paddimage-band (band left upper right lower &optional (value 0.0)) ; fills border with zeros
   	(let* ((width  (band-width band))

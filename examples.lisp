@@ -276,3 +276,6 @@
 (saveimage img11 "lenna-sharpening-3.0.png")
 (saveimage img12 "lenna-medianfilter-3x3.png")
 (saveimage img13 "lenna-nonlineardiffusion-0.1-2.0.png")
+
+(saveimage (first img1_st_ec)  "lenna-st-cornerness-rescaled.png" T) ; rescale from min...max to 0..255!
+(saveimage (first img1_st_ec)  "lenna-st-cornerness-pure.png"     NIL) ; clip to  to 0..255! If v>255 -> 255, if v<0 -> 0, else v.

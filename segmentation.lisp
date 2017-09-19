@@ -237,12 +237,33 @@
 	(height :int)
     (max_label :int))
 
+;The following features will be extracted for each region:
+; 
+;  | Index         | Feature                                |
+;  | ------------- | -------------------------------------- |
+;  |  0            | region_size                            |
+;  |  1,  2        | upperleft-x and y-coord                |
+;  |  3,  4        | lowerright-x and y-coord               |
+;  |  5,  6        | mean-x and y-coord                     |
+;  |  7            | min grey value                         |
+;  |  8            | max grey value                         |
+;  |  9            | mean grey value                        |
+;  | 10            | std.dev. grey value                    |
+;  | 11, 12        | major ev: x and y-coord                |
+;  | 13, 14        | minor ev: x and y-coord                |
+;  | 15            | major ew                               |
+;  | 16            | minor ew                               |
+;  | 17, 18        | grey value weighted mean-x and y-coord |
+;  | 19            | perimeter (region contour length)      |
+;  | 20            | skewness                               |
+;  | 21            | kurtosis                               |
+
 (defun extractfeatures-band (band label-band  &optional (max_label (array-reduce #'max label-band 0.0)))
   :lisp (sb-vm::set-floating-point-modes :traps '())
   (let* ((ml     (round max_label))
   		 (width  (band-width  band))
          (height (band-height band))
-         (band3  (make-band (+ ml 1) 16))
+         (band3  (make-band (+ ml 1) 22))
          (result (with-arrays-as-foreign-pointers
 						((band        ptr_band        :float :lisp-type single-float) 
 						 (label-band  ptr_label-band  :float :lisp-type single-float) 
@@ -261,13 +282,36 @@
 	(width :int)
 	(height :int)
     (max_label :int))
-    
+
+
+; The following features will be extracted for each region:
+; 
+;  | Index         | Feature                              |
+;  | ------------- | ------------------------------------ |
+;  |  0            | region_size                          |
+;  |  1,  2        | upperleft-x and y-coord              |
+;  |  3,  4        | lowerright-x and y-coord             |
+;  |  5,  6        | mean-x and y-coord                   |
+;  |  7,  8,  9    | min red,green,blue value             |
+;  | 10, 11, 12    | max red,green,blue value             |
+;  | 13, 14, 15    | mean red,green,blue value            |
+;  | 16, 17, 18    | std.dev. red,green,blue value        |
+;  | 19, 20        | major ev: x and y-coord              |
+;  | 21, 22        | minor ev: x and y-coord              |
+;  | 23            | major ew                             |
+;  | 24            | minor ew                             |
+;  | 25, 26        | luminace weighted mean-x and y-coord |
+;  |               | L = 0.3*R + 0.59*G + 0.11*B          |
+;  | 27            | perimeter (region contour length)    |
+;  | 28, 29, 30    | skewness (red, green, blue)          |
+;  | 31, 32, 33    | kurtosis (red, green, blue)          |
+
 (defun extractfeatures-rgb (band_r band_g band_b label-band &optional (max_label (array-reduce #'max label-band 0.0)))
   :lisp (sb-vm::set-floating-point-modes :traps '())
   (let* ((ml     (round max_label))
   		 (width  (band-width  band_r))
          (height (band-height band_r))
-         (band3  (make-band (+ ml 1) 25))
+         (band3  (make-band (+ ml 1) 34))
          (result (with-arrays-as-foreign-pointers
 						((band_r      ptr_r_band      :float :lisp-type single-float) 
 						 (band_g      ptr_g_band      :float :lisp-type single-float) 

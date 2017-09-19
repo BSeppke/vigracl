@@ -160,36 +160,48 @@
 (print "Statistics for WT of lenna's green channel")
 (do* ((i 0 (+ i 1)))
     ((= i (- (array-dimension (car wt_stats) 0) 1)))
-    	(format t "Region ~A:~%    Size ~A~%    UL: ~A    LR: ~A    CNT: ~A~%    Min. Color ~A    Max. Color ~A~%    Mean Color ~A~%    Std.dev. Color ~A ~%    Major EV: ~A ~%    Minor EV: ~A ~%    Major EW: ~A ~%    Minor EW: ~A ~%" 
+    	(format t "Region ~A:~%    Size ~A~%    UL: ~A    LR: ~A    CNT: ~A~%    Min. Color ~A    Max. Color ~A~%    Mean Color ~A~%    Std.dev. Color ~A ~%    Major EV: ~A ~%    Minor EV: ~A ~%    Major EW: ~A ~%    Minor EW: ~A~% Center of mass: ~A~% Perimeter: ~A~% Skeness: ~A~% Kurtosis: ~A~%" 
     		i
-    		(aref (car wt_stats) i 0)
-    		(list (aref (car wt_stats) i 1) (aref (car wt_stats) i 2))
-    		(list (aref (car wt_stats) i 3) (aref (car wt_stats) i 4))
-    		(list (aref (car wt_stats) i 5) (aref (car wt_stats) i 6))
-    		(if (= (band-height (car wt_stats)) 25)
+    		(aref (car wt_stats) i 0) ;Size
+    		(list (aref (car wt_stats) i 1) (aref (car wt_stats) i 2)) ;UpperLeft BBox
+    		(list (aref (car wt_stats) i 3) (aref (car wt_stats) i 4)) ;LowerRight BBox
+    		(list (aref (car wt_stats) i 5) (aref (car wt_stats) i 6)) ;BBox center
+    		(if (= (band-height (car wt_stats)) 34) ;Min intensity 
     			(list (aref (car wt_stats) i 7)(aref (car wt_stats) i 8)(aref (car wt_stats) i 9))
     			(aref (car wt_stats) i 7))
-    		(if (= (band-height (car wt_stats)) 25)
+    		(if (= (band-height (car wt_stats)) 34) ;Max intensity
     			(list (aref (car wt_stats) i 10)(aref (car wt_stats) i 11)(aref (car wt_stats) i 12))
     			(aref (car wt_stats) i 8))
-    		(if (= (band-height (car wt_stats)) 25)
+    		(if (= (band-height (car wt_stats)) 34) ;Mean intensity
     			(list (aref (car wt_stats) i 13)(aref (car wt_stats) i 14)(aref (car wt_stats) i 15))
     			(aref (car wt_stats) i 9))
-    		(if (= (band-height (car wt_stats)) 25)
+    		(if (= (band-height (car wt_stats)) 34) ;Std. dev. intensity
     			(list (aref (car wt_stats) i 16)(aref (car wt_stats) i 17)(aref (car wt_stats) i 18))
     			(aref (car wt_stats) i 10))
-    		(if (= (band-height (car wt_stats)) 25)
+    		(if (= (band-height (car wt_stats)) 34) ;Major Eigenvector
     			(list (aref (car wt_stats) i 19) (aref (car wt_stats) i 20))
     			(list (aref (car wt_stats) i 11) (aref (car wt_stats) i 12)))
-    		(if (= (band-height (car wt_stats)) 25)
+    		(if (= (band-height (car wt_stats)) 34) ; Minor Eigenvector
     			(list (aref (car wt_stats) i 21) (aref (car wt_stats) i 22))
     			(list (aref (car wt_stats) i 13) (aref (car wt_stats) i 14)))
-    		(if (= (band-height (car wt_stats)) 25)
+    		(if (= (band-height (car wt_stats)) 34) ;Major Eigenvalue
     			(aref (car wt_stats) i 23) 
     			(aref (car wt_stats) i 15))
-    		(if (= (band-height (car wt_stats)) 25)
+    		(if (= (band-height (car wt_stats)) 34) ;Minor Egenvalue
     			(aref (car wt_stats) i 24)
-    			(aref (car wt_stats) i 16))))
+    			(aref (car wt_stats) i 16))
+    		(if (= (band-height (car wt_stats)) 34) ;Center of mass
+    			(list (aref (car wt_stats) i 25) (aref (car wt_stats) i 26))
+    			(list (aref (car wt_stats) i 17) (aref (car wt_stats) i 18)))
+    		(if (= (band-height (car wt_stats)) 34) ;Perimeter
+    			(aref (car wt_stats) i 27)
+    			(aref (car wt_stats) i 19))
+    		(if (= (band-height (car wt_stats)) 34) ; Skewness
+    			(list (aref (car wt_stats) i 28)(aref (car wt_stats) i 29)(aref (car wt_stats) i 30))
+    			(aref (car wt_stats) i 20))
+    		(if (= (band-height (car wt_stats)) 34) ;Kurtosis
+    			(list (aref (car wt_stats) i 31)(aref (car wt_stats) i 32)(aref (car wt_stats) i 33))
+    			(aref (car wt_stats) i 21))))
 
 (defvar img2_wt_mc (regionimagetocrackedgeimage (meanColorImage label_img img) 0.0))
 (defvar img2_slic_mc (regionimagetocrackedgeimage (meanColorImage (slic img) img) 0.0))

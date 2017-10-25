@@ -338,3 +338,29 @@
                            (make-list band_count :initial-element 0.0)
                             value)))
   (mapcar #'(lambda (arr value) (paddimage-band arr left upper right lower value)) image fill_value)))
+  
+  
+;###############################################################################
+;###################         Clip images to Min...Max       ####################
+(defcfun ("vigra_clipimage_c" vigra_clipimage_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int)
+	(low :float)
+	(upp :float))
+
+(defun clipimage-band (band &optional (low 0.0) (upp 255.0))
+  	(let* ((width  (band-width band))
+		   (height (band-height band))
+	 	   (band2  (make-band width height 0.0))
+		   (result (with-arrays-as-foreign-pointers
+						((band 	ptr_band  :float :lisp-type single-float) 
+						 (band2	ptr_band2 :float :lisp-type single-float))
+						(vigra_clipimage_c ptr_band ptr_band2 width height low upp))))
+   		(if (= result 0)
+     		band2
+      		(error "Error in vigracl.imgproc:clipimage: Clipping of image failed!!"))))
+	  
+(defun clipimage (image  &optional (low 0.0) (upp 255.0))
+  	(mapcar #'(lambda (arr) (clipimage-band arr low upp)) image))

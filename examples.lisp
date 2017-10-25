@@ -227,7 +227,7 @@
 (setf  (aref matrix 1 0)  (sin theta))
 (setf  (aref matrix 2 2)  1.0d+00)
 
-(defvar img5aff (affinewarpimage img matrix 3))
+(defvar img5aff (clipimage (affinewarpimage img matrix 3) 0.0 255.0))
 
 (print "performing distance transform on canny edges of image")
 (defvar img6 (distancetransform

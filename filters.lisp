@@ -259,22 +259,24 @@
 	(width :int) 
 	(height :int)
 	(window_width :int) 
-	(window_height :int))
+	(window_height :int)
+	(border_treatment :int))
 
-(defun medianfilter-band (band window_width window_height)
+(defun medianfilter-band (band window_width window_height &optional (border_treatment 5)) ;;BT Mode default: ZERO_PADDING
   	(let* ((width  (band-width band))
 		   (height (band-height band))
 	 	   (band2 (make-band width height 0.0))
 	 	   (result (with-arrays-as-foreign-pointers
 						((band  ptr_band  :float :lisp-type single-float) 
 						 (band2 ptr_band2 :float :lisp-type single-float))
-						(vigra_medianfilter_c ptr_band ptr_band2 width height window_width window_height))))
+						(vigra_medianfilter_c ptr_band ptr_band2 width height window_width window_height border_treatment))))
     	(case result
       		((0) band2)
-      		((1) (error "Error in vigracl.filters.medianfilter: Median filtering failed!!")))))
+      		((1) (error "Error in vigracl.filters.medianfilter: Median filtering failed!!"))
+      		((2) (error "Error in vigracl.filters.medianfilter: Border treatment mode must be in [0, 2, 3, 4, 5]!")))))
 
-(defun medianfilter (image window_width window_height)
-  	(mapcar #'(lambda (arr) (medianfilter-band arr window_width window_height)) image))
+(defun medianfilter (image window_width window_height &optional (border_treatment 5)) ;;BT Mode default: ZERO_PADDING
+  	(mapcar #'(lambda (arr) (medianfilter-band arr window_width window_height border_treatment)) image))
        
 
 ;###############################################################################

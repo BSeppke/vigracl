@@ -332,3 +332,53 @@
 
 (defun shockfilter (image sigma rho upwind_factor_h iterations)
   (mapcar #'(lambda (arr) (shockfilter-band arr sigma rho upwind_factor_h iterations)) image))
+  
+;###############################################################################
+;###################       Non-local Mean Filtering         ####################
+
+(defcfun ("vigra_nonlocalmean_c" vigra_nonlocalmean_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(width :int)
+	(height :int)
+	(policy_type :int)
+    (sigma :float)
+    (mean :float)
+    (varRatio :float)
+    (epsilon :float)
+    (sigmaSpatial :float)
+    (searchRadius :int)
+    (patchRadius :int)
+    (sigmaMean :float)
+    (stepSize :int)
+    (iterations :int)
+    (nThreads :int)
+    (verbose :boolean))
+
+(defun nonlocalmean-band (band 
+                          &optional (policy_type 1) (sigma 50.0) (mean 5.0) (varRatio 0.5) (epsilon 0.00001)
+                                    (sigmaSpatial 2.0) (searchRadius 5) (patchRadius 2) (sigmaMean 10.0)
+                                    (stepSize 2) (iterations 2) (nThreads 8) (verbose T))
+  	(let* ((width  (band-width band))
+		   (height (band-height band))
+	 	   (band2 (make-band width height 0.0))
+	 	   (result (with-arrays-as-foreign-pointers
+						((band  ptr_band  :float :lisp-type single-float) 
+						 (band2 ptr_band2 :float :lisp-type single-float))
+						(vigra_nonlocalmean_c ptr_band ptr_band2 width height
+						                      policy_type sigma mean varRatio epsilon
+                                              sigmaSpatial searchRadius patchRadius sigmaMean
+                                              stepSize iterations nThreads verbose))))
+    	(case result
+      		((0) band2)
+		    ((1) (error "Error in vigracl.filters.nonlocalmean: Shock filtering failed!"))
+		    ((2) (error "Error in vigracl.filters.nonlocalmean: Iterations need to be > 0!")))))
+
+(defun nonlocalmean (image 
+                     &optional (policy_type 1) (sigma 50.0) (mean 5.0) (varRatio 0.5) (epsilon 0.00001)
+                               (sigmaSpatial 2.0) (searchRadius 5) (patchRadius 2) (sigmaMean 10.0)
+                               (stepSize 2) (iterations 2) (nThreads 8) (verbose T))
+  (mapcar #'(lambda (arr) (nonlocalmean-band arr
+                                             policy_type sigma mean varRatio epsilon
+                                             sigmaSpatial searchRadius patchRadius sigmaMean
+                                             stepSize iterations nThreads verbose)) image))

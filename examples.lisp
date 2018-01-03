@@ -245,6 +245,12 @@
 (defvar img12 (medianfilter img 3 3))
 (defvar img13 (nonlineardiffusion img 0.1 2.0))
 
+(defvar shock_img1 (shockfilter img    2.0 6.0 0.3 1))
+(defvar shock_img5 (shockfilter shock_img1 2.0 6.0 0.3 4))
+
+;Testing the vigra w.r.t. non-local mean filter
+(defvar nlm_img (nonlocalmean img))
+
 (print "testing splineimageview facilities")
 (defvar pos_x  34.23)
 (defvar pos_y 123.23)
@@ -288,6 +294,10 @@
 (saveimage img11 "lenna-sharpening-3.0.png")
 (saveimage img12 "lenna-medianfilter-3x3.png")
 (saveimage img13 "lenna-nonlineardiffusion-0.1-2.0.png")
+
+(saveimage shock_img1  "lenna-shock-s2-r6-t03-i1.png")
+(saveimage shock_img5  "lenna-shock-s2-r6-t03-i5.png")
+(saveimage nlm_img  "lenna-nlm.png")
 
 (saveimage (first img1_st_ec)  "lenna-st-cornerness-rescaled.png" T) ; rescale from min...max to 0..255!
 (saveimage (first img1_st_ec)  "lenna-st-cornerness-pure.png"     NIL) ; clip to  to 0..255! If v>255 -> 255, if v<0 -> 0, else v.

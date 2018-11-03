@@ -99,8 +99,15 @@
 ;Calculate the amplitude of the frequency spectrum
 (defun complex-magnitude (real imag)
   (sqrt (+ (* real real) (* imag imag))))
+  
+(print "Performance test: Computing complex magnitude using CL:")
+(time (defvar imgfft (image-map #'complex-magnitude (first imgrectfft) (second imgrectfft))))
 
-(defvar imgfft (image-map #'complex-magnitude (first imgrectfft) (second imgrectfft)))
+(print "Performance test: Computing complex magnitude using C++:")
+(time (defvar imgfft2 
+	(image^ (image+ (image*  (first imgrectfft)  (first imgrectfft)) 
+					(image* (second imgrectfft) (second imgrectfft))) '(0.5))))
+
 
 (defvar imgrectfft-ifft (fouriertransforminverse imgrectfft))
 

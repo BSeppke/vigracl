@@ -98,6 +98,32 @@
 	   :reflectimage
 	   :fouriertransform-band
 	   :fouriertransform
+	   :fouriertransforminverse-band
+       :fouriertransforminverse
+	   :fastcrosscorrelation-band
+	   :fastcrosscorrelation
+	   :fastnormalizedcrosscorrelation-band
+	   :fastnormalizedcrosscorrelation
+	   :localmaxima-band
+	   :localmaxima
+	   :localminima-band
+	   :localminima
+	   :subimage-band
+	   :subimage
+	   :paddimage-band
+	   :paddimage
+	   :clipimage-band
+	   :clipimage
+	   :image+-band
+	   :image+
+	   :image--band
+	   :image-
+	   :image*-band
+	   :image*
+	   :image/-band
+	   :image/
+	   :image^-band
+	   :image^
 	   
 	   ;vigracl.segmentation
 	   :labelimage-band

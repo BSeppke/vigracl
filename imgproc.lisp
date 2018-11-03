@@ -231,22 +231,33 @@
 	(band2 :pointer)
 	(width :int)
 	(height :int)
-	(eight_connectivity :boolean))
+	(eight_connectivity :boolean)
+    (marker :float)
+    (threshold :float)
+    (allow_at_border :boolean)
+    (allow_plateaus :boolean)
+    (plateau_epsilon :float))
 
-(defun localmaxima-band (band &optional (eight_connectivity T))
+(defun localmaxima-band (band &optional (eight_connectivity T) (marker 1.0) (threshold MOST-NEGATIVE-SHORT-FLOAT) 
+										(allow_at_border NIL) (allow_plateaus NIL) (plateau_epsilon 0.001))
   	(let* ((width  (band-width band))
 		   (height (band-height band))
 	 	   (band2  (make-band width height 0.0))
 		   (result (with-arrays-as-foreign-pointers
 						((band 	ptr_band  :float :lisp-type single-float) 
 						 (band2	ptr_band2 :float :lisp-type single-float))
-						(vigra_localmaxima_c ptr_band ptr_band2 width height eight_connectivity))))
+						(vigra_localmaxima_c ptr_band ptr_band2 width height eight_connectivity 
+											 marker threshold allow_at_border allow_plateaus plateau_epsilon))))
    		(case result
      		((0) band2)
       		((1) (error "Error in vigracl.imgproc:localmaxima: Extraction of local maxima of image failed!!")))))
 	  
-(defun localmaxima (image &optional (eight_connectivity T))
-  	(mapcar #'(lambda (arr) (localmaxima-band arr eight_connectivity)) image))
+(defun localmaxima (image &optional (eight_connectivity T) (marker 1.0) (threshold MOST-NEGATIVE-SHORT-FLOAT)
+							        (allow_at_border NIL) (allow_plateaus NIL) (plateau_epsilon 0.001))
+  	(mapcar #'(lambda (arr) (localmaxima-band arr eight_connectivity marker 
+  												  threshold allow_at_border 
+  											  	  allow_plateaus plateau_epsilon))
+  			image))
   
 ;###############################################################################
 ;################### Extraction of local minima of an image ####################
@@ -255,22 +266,33 @@
 	(band2 :pointer)
 	(width :int)
 	(height :int)
-	(eight_connectivity :boolean))
+	(eight_connectivity :boolean)
+    (marker :float)
+    (threshold :float)
+    (allow_at_border :boolean)
+    (allow_plateaus :boolean)
+    (plateau_epsilon :float))
 
-(defun localminima-band (band &optional (eight_connectivity T))
+(defun localminima-band (band &optional (eight_connectivity T) (marker 1.0) (threshold MOST-POSITIVE-SHORT-FLOAT)
+										(allow_at_border NIL) (allow_plateaus NIL) (plateau_epsilon 0.001))
   	(let* ((width  (band-width band))
 		   (height (band-height band))
 	 	   (band2  (make-band width height 0.0))
 		   (result (with-arrays-as-foreign-pointers
 						((band 	ptr_band  :float :lisp-type single-float) 
 						 (band2	ptr_band2 :float :lisp-type single-float))
-						(vigra_localminima_c ptr_band ptr_band2 width height eight_connectivity))))
+						(vigra_localminima_c ptr_band ptr_band2 width height eight_connectivity 
+											 marker threshold allow_at_border allow_plateaus plateau_epsilon))))
    		(case result
      		((0) band2)
       		((1) (error "Error in vigracl.imgproc:localminima: Extraction of local minima of image failed!!")))))
 	  
-(defun localminima (image &optional (eight_connectivity T))
-  	(mapcar #'(lambda (arr) (localminima-band arr eight_connectivity))  image))
+(defun localminima (image  &optional (eight_connectivity T) (marker 1.0) (threshold MOST-POSITIVE-SHORT-FLOAT)
+									 (allow_at_border NIL) (allow_plateaus NIL) (plateau_epsilon 0.001))
+  	(mapcar #'(lambda (arr) (localminima-band arr eight_connectivity marker 
+  												  threshold allow_at_border 
+  											  	  allow_plateaus plateau_epsilon))
+  			image))
 
 
 ;###############################################################################
@@ -364,3 +386,197 @@
 	  
 (defun clipimage (image  &optional (low 0.0) (upp 255.0))
   	(mapcar #'(lambda (arr) (clipimage-band arr low upp)) image))
+  	
+  	
+  	
+;###############################################################################
+;###################           Image addition               ####################
+(defcfun ("vigra_imageplusimage_c" vigra_imageplusimage_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(width :int)
+    (height :int))
+
+(defcfun ("vigra_imageplusvalue_c" vigra_imageplusvalue_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(value :float)
+	(width :int)
+    (height :int))
+
+(defun image+-band (band1 band2_or_value)
+  	(let* ((width  (band-width band1))
+		   (height (band-height band1))
+	 	   (band3  (make-band width height 0.0))
+	 	   (result 
+	 	   		(if (numberp band2_or_value)
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imageplusvalue_c ptr_band1 ptr_band3 band2_or_value width height))
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band2_or_value	ptr_band2 :float :lisp-type single-float)
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imageplusimage_c ptr_band1 ptr_band2 ptr_band3 width height)))))
+   		(if (= result 0)
+     		band3
+      		(error "Error in vigracl.imgproc:image+: Addition of images failed!!"))))
+	  
+(defun image+ (image1 image2)
+  	(mapcar #'(lambda (arr1 arr2) (image+-band arr1 arr2)) image1 image2))
+
+;###############################################################################
+;###################           Image subtraction            ####################
+(defcfun ("vigra_imageminusimage_c" vigra_imageminusimage_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(width :int)
+    (height :int))
+
+(defcfun ("vigra_imageminusvalue_c" vigra_imageminusvalue_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(value :float)
+	(width :int)
+    (height :int))
+
+(defun image--band (band1 band2_or_value)
+  	(let* ((width  (band-width band1))
+		   (height (band-height band1))
+	 	   (band3  (make-band width height 0.0))
+	 	   (result 
+	 	   		(if (numberp band2_or_value)
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imageminusvalue_c ptr_band1 ptr_band3 band2_or_value width height))
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band2_or_value	ptr_band2 :float :lisp-type single-float)
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imageminusimage_c ptr_band1 ptr_band2 ptr_band3 width height)))))
+   		(if (= result 0)
+     		band3
+      		(error "Error in vigracl.imgproc:image-: Subtraction of images failed!!"))))
+	  
+(defun image- (image1 image2)
+  	(mapcar #'(lambda (arr1 arr2) (image--band arr1 arr2)) image1 image2))
+
+
+;###############################################################################
+;###################           Image multiplication         ####################
+(defcfun ("vigra_imagemultimage_c" vigra_imagemultimage_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(width :int)
+    (height :int))
+
+(defcfun ("vigra_imagemultvalue_c" vigra_imagemultvalue_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(value :float)
+	(width :int)
+    (height :int))
+    
+(defun image*-band (band1 band2_or_value)
+  	(let* ((width  (band-width band1))
+		   (height (band-height band1))
+	 	   (band3  (make-band width height 0.0))
+	 	   (result 
+	 	   		(if (numberp band2_or_value)
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imagemultvalue_c ptr_band1 ptr_band3 band2_or_value width height))
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band2_or_value	ptr_band2 :float :lisp-type single-float)
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imagemultimage_c ptr_band1 ptr_band2 ptr_band3 width height)))))
+   		(if (= result 0)
+     		band3
+      		(error "Error in vigracl.imgproc:image*: Multiplication of images failed!!"))))
+	  
+(defun image* (image1 image2)
+  	(mapcar #'(lambda (arr1 arr2) (image*-band arr1 arr2)) image1 image2))
+
+;###############################################################################
+;###################              Image dividing            ####################
+(defcfun ("vigra_imagedivideimage_c" vigra_imagedivideimage_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(width :int)
+    (height :int))
+
+(defcfun ("vigra_imagedividevalue_c" vigra_imagedividevalue_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(value :float)
+	(width :int)
+    (height :int))
+    
+(defun image/-band (band1 band2_or_value)
+  	(let* ((width  (band-width band1))
+		   (height (band-height band1))
+	 	   (band3  (make-band width height 0.0))
+	 	   (result 
+	 	   		(if (numberp band2_or_value)
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imagedividevalue_c ptr_band1 ptr_band3 band2_or_value width height))
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band2_or_value	ptr_band2 :float :lisp-type single-float)
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imagedivideimage_c ptr_band1 ptr_band2 ptr_band3 width height)))))
+   		(if (= result 0)
+     		band3
+      		(error "Error in vigracl.imgproc:image/: Division of images failed!!"))))
+	  
+(defun image/ (image1 image2)
+  	(mapcar #'(lambda (arr1 arr2) (image/-band arr1 arr2)) image1 image2))
+
+
+;###############################################################################
+;###################          Image raised to power         ####################
+(defcfun ("vigra_imagepowimage_c" vigra_imagepowimage_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(band3 :pointer)
+	(width :int)
+    (height :int))
+
+(defcfun ("vigra_imagepowvalue_c" vigra_imagepowvalue_c) :int
+	(band :pointer)
+	(band2 :pointer)
+	(value :float)
+	(width :int)
+    (height :int))
+    
+(defun image^-band (band1 band2_or_value)
+  	(let* ((width  (band-width band1))
+		   (height (band-height band1))
+	 	   (band3  (make-band width height 0.0))
+	 	   (result 
+	 	   		(if (numberp band2_or_value)
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imagepowvalue_c ptr_band1 ptr_band3 band2_or_value width height))
+		   			(with-arrays-as-foreign-pointers
+						((band1 ptr_band1 :float :lisp-type single-float) 
+						 (band2_or_value	ptr_band2 :float :lisp-type single-float)
+						 (band3	ptr_band3 :float :lisp-type single-float))
+						(vigra_imagepowimage_c ptr_band1 ptr_band2 ptr_band3 width height)))))
+   		(if (= result 0)
+     		band3
+      		(error "Error in vigracl.imgproc:image^: Power of images failed!!"))))
+	  
+(defun image^ (image1 image2)
+  	(mapcar #'(lambda (arr1 arr2) (image^-band arr1 arr2)) image1 image2))
